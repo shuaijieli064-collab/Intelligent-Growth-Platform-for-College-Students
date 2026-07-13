@@ -1,0 +1,202 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg-surface: #faf9f7;
+  --color-bg-sidebar: #f3f1ed;
+  --color-bg-card: #ffffff;
+  --color-bg-input: #ffffff;
+  --color-bg-hover: #faf8f5;
+  --color-bg-active: #f3f1ed;
+
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #555555;
+  --color-text-muted: #888888;
+  --color-text-inverse: #ffffff;
+
+  --color-border-default: #e8e5e1;
+  --color-border-focus: #d4cfc6;
+  --color-border-hover: #d4cfc6;
+
+  --color-accent-primary: #d97706;
+  --color-accent-hover: #b8610a;
+  --color-accent-active: #92400e;
+  --color-accent-light: #f5efe6;
+  --color-accent-text: #d97706;
+
+  --color-success: #059669;
+  --color-success-light: #d1fae5;
+  --color-warning: #d97706;
+  --color-warning-light: #fef3c7;
+  --color-danger: #dc2626;
+  --color-danger-light: #fee2e2;
+  --color-info: #2563eb;
+  --color-info-light: #dbeafe;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 64px;
+  --header-height: 64px;
+}
+
+.dark {
+  --color-bg-surface: #1a1b1e;
+  --color-bg-sidebar: #141517;
+  --color-bg-card: #212226;
+  --color-bg-input: #212226;
+  --color-bg-hover: #323336;
+  --color-bg-active: #252629;
+
+  --color-text-primary: #e4e4e4;
+  --color-text-secondary: #aaaaaa;
+  --color-text-muted: #777777;
+  --color-text-inverse: #1a1a1a;
+
+  --color-border-default: #2a2b2e;
+  --color-border-focus: #3d3e42;
+  --color-border-hover: #3d3e42;
+
+  --color-accent-primary: #f0c070;
+  --color-accent-hover: #f59b1e;
+  --color-accent-active: #b8610a;
+  --color-accent-light: #3d2e18;
+  --color-accent-text: #f0c070;
+
+  --color-success: #10b981;
+  --color-success-light: #064e3b;
+  --color-warning: #f59e0b;
+  --color-warning-light: #78350f;
+  --color-danger: #f43f5e;
+  --color-danger-light: #4c0519;
+  --color-info: #3b82f6;
+  --color-info-light: #1e3a5f;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-bg-surface);
+    color: var(--color-text-primary);
+    font-size: 1rem;
+    line-height: 1.5;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--color-text-primary);
+  }
+
+  h1 { font-size: 2.25rem; }
+  h2 { font-size: 1.875rem; }
+  h3 { font-size: 1.5rem; }
+  h4 { font-size: 1.25rem; }
+  h5 { font-size: 1.125rem; }
+  h6 { font-size: 1rem; }
+
+  p {
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  a {
+    color: var(--color-accent-primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  a:hover {
+    color: var(--color-accent-hover);
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  input, textarea, select {
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  ::selection {
+    background-color: var(--color-accent-light);
+    color: var(--color-accent-text);
+  }
+
+  /* Scrollbar styles - Claude warm style */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg-surface);
+    border-radius: 5px;
+    margin: 2px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-focus);
+    border-radius: 5px;
+    min-height: 36px;
+    transition: background-color 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-muted);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Firefox scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-focus) var(--color-bg-surface);
+  }
+}
+
+@layer components {
+  .page-container {
+    @apply p-6 md:p-8 max-w-7xl mx-auto;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold text-text-primary mb-6;
+  }
+
+  .card-hover {
+    @apply transition-all duration-200 hover:border-border-hover hover:shadow-md;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-accent-primary to-accent-hover bg-clip-text text-transparent;
+  }
+}
+
+@layer utilities {
+  .content-auto {
+    content-visibility: auto;
+  }
+
+  .transition-theme {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+}

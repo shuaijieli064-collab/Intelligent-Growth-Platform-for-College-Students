@@ -1,0 +1,17 @@
+{
+  "db_config": {
+    "host": "localhost",
+    "port": 3306,
+    "user": "root",
+    "password": "your_password_here",
+    "database": "student_growth_platform",
+    "charset": "utf8mb4"
+  },
+  "llm_config": {
+    "provider": "deepseek",
+    "api_key": "your_api_key_here",
+    "api_url": "https://api.deepseek.com/v1/chat/completions",
+    "model": "deepseek-chat"
+  },
+  "theme": "light"
+}

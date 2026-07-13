@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据录入 - 学习记录 — 大学生智能成长平台</title>
+    <style id="theme-vars">
+{"color":{"dark":{"primary-foreground":{"hex":"#141413","opacity":"1"},"accent":{"hex":"#1a1915","opacity":"1"},"card":{"hex":"#2c2c2b","opacity":"1"},"secondary-foreground":{"hex":"#30302e","opacity":"1"},"destructive":{"hex":"#ef4444","opacity":"1","isPrimary":true},"primary":{"hex":"#d97757","opacity":"1"},"muted-foreground":{"hex":"#b7b5a9","opacity":"1"},"secondary":{"hex":"#e9e6dc","opacity":"1"},"card-foreground":{"hex":"#faf9f5","opacity":"1"},"error-foreground":{"hex":"#ffffff","opacity":"1"}},"brand":{"brand-50":{"hex":"#3a2a22","opacity":"1"},"brand-100":{"hex":"#4d3528","opacity":"1"},"brand-200":{"hex":"#6b4533","opacity":"1"},"brand-300":{"hex":"#8a5740","opacity":"1"},"brand-400":{"hex":"#b0683f","opacity":"1"},"brand-500":{"hex":"#d97757","opacity":"1","isPrimary":true},"brand-600":{"hex":"#e08d6f","opacity":"1"},"brand-700":{"hex":"#e8a98f","opacity":"1"},"brand-800":{"hex":"#f0c6b3","opacity":"1"},"brand-900":{"hex":"#f8e3d8","opacity":"1"}},"text":{"text-50":{"hex":"#1b1b19","opacity":"1"},"text-100":{"hex":"#2c2c2b","opacity":"1"},"text-200":{"hex":"#46443b","opacity":"1"},"text-300":{"hex":"#6e6d68","opacity":"1"},"text-400":{"hex":"#908e84","opacity":"1"},"text-500":{"hex":"#b7b5a9","opacity":"1"},"text-600":{"hex":"#c3c0b6","opacity":"1"},"text-700":{"hex":"#d8d6cd","opacity":"1"},"text-800":{"hex":"#f1f1ef","opacity":"1"},"text-900":{"hex":"#faf9f5","opacity":"1","isPrimary":true}},"icon":{"icon-50":{"hex":"#1b1b19","opacity":"1"},"icon-100":{"hex":"#2c2c2b","opacity":"1"},"icon-200":{"hex":"#46443b","opacity":"1"},"icon-300":{"hex":"#6e6d68","opacity":"1"},"icon-400":{"hex":"#908e84","opacity":"1","isPrimary":true},"icon-500":{"hex":"#b7b5a9","opacity":"1"},"icon-600":{"hex":"#d8d6cd","opacity":"1"},"icon-700":{"hex":"#f1f1ef","opacity":"1"},"icon-800":{"hex":"#f8f8f6","opacity":"1"},"icon-900":{"hex":"#ffffff","opacity":"1"}},"border":{"border-50":{"hex":"#1f1e1d","opacity":"1"},"border-100":{"hex":"#2c2c2b","opacity":"1"},"border-200":{"hex":"#343430","opacity":"1"},"border-300":{"hex":"#3e3e38","opacity":"1"},"border-400":{"hex":"#4a4a43","opacity":"1"},"border-500":{"hex":"#52514a","opacity":"1"},"border-600":{"hex":"#6e6d68","opacity":"1"},"border-700":{"hex":"#908e84","opacity":"1","isPrimary":true},"border-800":{"hex":"#b7b5a9","opacity":"1"},"border-900":{"hex":"#d8d6cd","opacity":"1"}},"success":{"success-50":{"hex":"#232a1c","opacity":"1"},"success-100":{"hex":"#2e3823","opacity":"1"},"success-200":{"hex":"#3f4d30","opacity":"1"},"success-300":{"hex":"#556640","opacity":"1"},"success-400":{"hex":"#708353","opacity":"1"},"success-500":{"hex":"#8ca06f","opacity":"1","isPrimary":true},"success-600":{"hex":"#a3b58a","opacity":"1"},"success-700":{"hex":"#bccaa8","opacity":"1"},"success-800":{"hex":"#d6dfc8","opacity":"1"},"success-900":{"hex":"#edf2e4","opacity":"1"}},"error":{"error-50":{"hex":"#3a1f1f","opacity":"1"},"error-100":{"hex":"#4d2424","opacity":"1"},"error-200":{"hex":"#6e2c2c","opacity":"1"},"error-300":{"hex":"#93302f","opacity":"1"},"error-400":{"hex":"#c43a39","opacity":"1"},"error-500":{"hex":"#ef4444","opacity":"1","isPrimary":true},"error-600":{"hex":"#f26b6b","opacity":"1"},"error-700":{"hex":"#f59292","opacity":"1"},"error-800":{"hex":"#f9b9b9","opacity":"1"},"error-900":{"hex":"#fcdede","opacity":"1"}},"bg":{"bg-50":{"hex":"#1b1b19","opacity":"1"},"bg-100":{"hex":"#262624","opacity":"1"},"bg-200":{"hex":"#2c2c2b","opacity":"1"},"bg-300":{"hex":"#30302e","opacity":"1"},"bg-400":{"hex":"#3e3e38","opacity":"1"},"bg-500":{"hex":"#4a4a43","opacity":"1"},"bg-600":{"hex":"#52514a","opacity":"1"},"bg-700":{"hex":"#6e6d68","opacity":"1"},"bg-800":{"hex":"#908e84","opacity":"1","isPrimary":true},"bg-900":{"hex":"#b7b5a9","opacity":"1"}},"sidebar":{"sidebar-accent-foreground":{"hex":"#343434","opacity":"1"},"sidebar-foreground":{"hex":"#3d3d3a","opacity":"1"},"sidebar-primary":{"hex":"#c96442","opacity":"1","isPrimary":true},"sidebar-ring":{"hex":"#b5b5b5","opacity":"1"},"sidebar-accent":{"hex":"#e9e6dc","opacity":"1"},"sidebar-border":{"hex":"#ebebeb","opacity":"1"},"sidebar":{"hex":"#f5f4ee","opacity":"1"},"sidebar-primary-foreground":{"hex":"#fbfbfb","opacity":"1"}},"chart":{"chart-3":{"hex":"#1a1915","opacity":"1"},"chart-4":{"hex":"#2f2b48","opacity":"1"},"chart-1":{"hex":"#b05730","opacity":"1"},"chart-5":{"hex":"#b4552d","opacity":"1"},"chart-2":{"hex":"#9c87f5","opacity":"1","isPrimary":true}}},"font":{"family":{"font-display":"Newsreader, Georgia, ui-serif, serif","font-sans":"Poppins, ui-sans-serif, system-ui, sans-serif","font-serif":"Lora, Georgia, ui-serif, serif","font-mono":"Geist Mono, ui-monospace, monospace"},"size":{},"weight":{},"lineHeight":{}},"shadow":{"shadow-2xs":{"xOffset":"0px","yOffset":"1px","blur":"3px","spread":"0px","color":{"hex":"#000000","opacity":"0.05"}},"shadow-xs":{"xOffset":"0px","yOffset":"1px","blur":"3px","spread":"0px","color":{"hex":"#000000","opacity":"0.05"}},"shadow-sm":{"layers":[{"xOffset":"0px","yOffset":"1px","blur":"3px","spread":"0px","color":{"hex":"#000000","opacity":"0.1"}},{"xOffset":"0px","yOffset":"1px","blur":"2px","spread":"-1px","color":{"hex":"#000000","opacity":"0.1"}}]},"shadow":{"layers":[{"xOffset":"0px","yOffset":"1px","blur":"3px","spread":"0px","color":{"hex":"#000000","opacity":"0.1"}},{"xOffset":"0px","yOffset":"1px","blur":"2px","spread":"-1px","color":{"hex":"#000000","opacity":"0.1"}}]},"shadow-md":{"layers":[{"xOffset":"0px","yOffset":"1px","blur":"3px","spread":"0px","color":{"hex":"#000000","opacity":"0.1"}},{"xOffset":"0px","yOffset":"2px","blur":"4px","spread":"-1px","color":{"hex":"#000000","opacity":"0.1"}}]},"shadow-lg":{"layers":[{"xOffset":"0px","yOffset":"1px","blur":"3px","spread":"0px","color":{"hex":"#000000","opacity":"0.1"}},{"xOffset":"0px","yOffset":"4px","blur":"6px","spread":"-1px","color":{"hex":"#000000","opacity":"0.1"}}]},"shadow-xl":{"layers":[{"xOffset":"0px","yOffset":"1px","blur":"3px","spread":"0px","color":{"hex":"#000000","opacity":"0.1"}},{"xOffset":"0px","yOffset":"8px","blur":"10px","spread":"-1px","color":{"hex":"#000000","opacity":"0.1"}}]},"shadow-2xl":{"xOffset":"0px","yOffset":"1px","blur":"3px","spread":"0px","color":{"hex":"#000000","opacity":"0.25"}}},"radius":{"radius-sm":"8px","radius-md":"12px","radius":"16px","radius-xl":"20px","radius-2xl":"24px","radius-full":"9999px"},"spacing":{"spacing":"4px"},"size":{}}
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  
+  @layer base {
+    body { background: var(--claude-background); color: var(--claude-foreground); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body class="min-h-screen font-sans antialiased">
+    <main class="flex min-h-screen" style="font-family: var(--claude-font-sans);">
+
+        <!-- Sidebar -->
+        <aside class="fixed left-0 top-0 bottom-0 w-[230px] flex flex-col border-r z-30" style="background: var(--claude-sidebar); border-color: var(--claude-sidebar-border);">
+            <!-- Logo -->
+            <div class="h-16 flex items-center px-5 border-b shrink-0" style="border-color: var(--claude-sidebar-border);">
+                <span class="text-lg" style="font-family: var(--claude-font-display); color: var(--claude-sidebar-primary);">成长平台</span>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 overflow-y-auto py-4 px-3 no-scrollbar">
+                <!-- Group 1: 概览 -->
+                <div class="mb-5">
+                    <p class="px-3 mb-2 text-[11px] font-semibold tracking-[0.1em] uppercase" style="color: var(--claude-muted-foreground);">概览</p>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--claude-sidebar-foreground)] hover:bg-[var(--claude-sidebar-accent)] transition-colors duration-150">
+                        <span data-icon class="w-[18px] h-[18px] shrink-0" style="-webkit-mask-image: url('../assets/icons/dl_builtin_claude/house.svg'); mask-image: url('../assets/icons/dl_builtin_claude/house.svg');"></span>
+                        <span>首页</span>
+                    </a>
+                </div>
+
+                <!-- Group 2: 学习管理 -->
+                <div class="mb-5">
+                    <p class="px-3 mb-2 text-[11px] font-semibold tracking-[0.1em] uppercase" style="color: var(--claude-muted-foreground);">学习管理</p>
+                    <!-- 数据录入 - ACTIVE -->
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium" style="background: var(--claude-sidebar-accent); color: var(--claude-sidebar-accent-foreground);">
+                        <span data-icon class="w-[18px] h-[18px] shrink-0" style="-webkit-mask-image: url('../assets/icons/dl_builtin_claude/pen-line.svg'); mask-image: url('../assets/icons/dl_builtin_claude/pen-line.svg'); background-color: var(--claude-sidebar-primary);"></span>
+                        <span>数据录入</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--claude-sidebar-foreground)] hover:bg-[var(--claude-sidebar-accent)] transition-colors duration-150">
+                        <i data-lucide="chart-column" class="w-[18px] h-[18px] shrink-0"></i>
+                        <span>数据可视化</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--claude-sidebar-foreground)] hover:bg-[var(--claude-sidebar-accent)] transition-colors duration-150">
+                        <i data-lucide="target" class="w-[18px] h-[18px] shrink-0"></i>
+                        <span>学习计划</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--claude-sidebar-foreground)] hover:bg-[var(--claude-sidebar-accent)] transition-colors duration-150">
+                        <i data-lucide="trending-up" class="w-[18px] h-[18px] shrink-0"></i>
+                        <span>成绩预测</span>
+                    </a>
+                </div>
+
+                <!-- Group 3: 智能分析 -->
+                <div class="mb-5">
+                    <p class="px-3 mb-2 text-[11px] font-semibold tracking-[0.1em] uppercase" style="color: var(--claude-muted-foreground);">智能分析</p>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--claude-sidebar-foreground)] hover:bg-[var(--claude-sidebar-accent)] transition-colors duration-150">
+                        <span data-icon class="w-[18px] h-[18px] shrink-0" style="-webkit-mask-image: url('../assets/icons/dl_builtin_claude/message-circle-more.svg'); mask-image: url('../assets/icons/dl_builtin_claude/message-circle-more.svg');"></span>
+                        <span>AI 学习教练</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--claude-sidebar-foreground)] hover:bg-[var(--claude-sidebar-accent)] transition-colors duration-150">
+                        <i data-lucide="share-2" class="w-[18px] h-[18px] shrink-0"></i>
+                        <span>知识图谱</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--claude-sidebar-foreground)] hover:bg-[var(--claude-sidebar-accent)] transition-colors duration-150">
+                        <i data-lucide="clipboard-list" class="w-[18px] h-[18px] shrink-0"></i>
+                        <span>专注度监测</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--claude-sidebar-foreground)] hover:bg-[var(--claude-sidebar-accent)] transition-colors duration-150">
+                        <span data-icon class="w-[18px] h-[18px] shrink-0" style="-webkit-mask-image: url('../assets/icons/dl_builtin_claude/triangle-alert.svg'); mask-image: url('../assets/icons/dl_builtin_claude/triangle-alert.svg');"></span>
+                        <span>风险预警</span>
+                    </a>
+                </div>
+
+                <!-- Group 4: 个人中心 -->
+                <div class="mb-5">
+                    <p class="px-3 mb-2 text-[11px] font-semibold tracking-[0.1em] uppercase" style="color: var(--claude-muted-foreground);">个人中心</p>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--claude-sidebar-foreground)] hover:bg-[var(--claude-sidebar-accent)] transition-colors duration-150">
+                        <span data-icon class="w-[18px] h-[18px] shrink-0" style="-webkit-mask-image: url('../assets/icons/dl_builtin_claude/user.svg'); mask-image: url('../assets/icons/dl_builtin_claude/user.svg');"></span>
+                        <span>成长档案</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--claude-sidebar-foreground)] hover:bg-[var(--claude-sidebar-accent)] transition-colors duration-150">
+                        <span data-icon class="w-[18px] h-[18px] shrink-0" style="-webkit-mask-image: url('../assets/icons/dl_builtin_claude/star.svg'); mask-image: url('../assets/icons/dl_builtin_claude/star.svg');"></span>
+                        <span>资源推荐</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--claude-sidebar-foreground)] hover:bg-[var(--claude-sidebar-accent)] transition-colors duration-150">
+                        <span data-icon class="w-[18px] h-[18px] shrink-0" style="-webkit-mask-image: url('../assets/icons/dl_builtin_claude/folder-open.svg'); mask-image: url('../assets/icons/dl_builtin_claude/folder-open.svg');"></span>
+                        <span>数字孪生</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- User area -->
+            <div class="px-3 py-4 border-t shrink-0" style="border-color: var(--claude-sidebar-border);">
+                <div class="flex items-center gap-3 px-3">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-white shrink-0" style="background: var(--claude-brand-500);">张</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium truncate" style="color: var(--claude-sidebar-foreground);">张同学</p>
+                        <p class="text-xs truncate" style="color: var(--claude-muted-foreground);">计算机科学</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main content area -->
+        <div class="ml-[230px] flex-1 flex flex-col min-h-screen">
+            <!-- Topbar -->
+            <header class="sticky top-0 z-20 h-16 flex items-center justify-between px-8 border-b shrink-0" style="border-color: var(--claude-border); background: var(--claude-background); backdrop-filter: blur(12px);">
+                <!-- Breadcrumb -->
+                <nav class="flex items-center gap-2 text-sm" style="color: var(--claude-muted-foreground);">
+                    <span class="truncate">学习管理</span>
+                    <i data-lucide="chevron-right" class="w-4 h-4 shrink-0"></i>
+                    <span class="truncate" style="color: var(--claude-foreground);">数据录入</span>
+                </nav>
+                <!-- Actions -->
+                <div class="flex items-center gap-2">
+                    <button type="button" class="w-9 h-9 flex items-center justify-center rounded-lg border transition-colors duration-150 hover:bg-[var(--claude-sidebar-accent)]" style="border-color: var(--claude-border); color: var(--claude-foreground);" aria-label="切换主题">
+                        <i data-lucide="sun" class="w-[18px] h-[18px]"></i>
+                    </button>
+                    <button type="button" class="w-9 h-9 flex items-center justify-center rounded-lg border transition-colors duration-150 hover:bg-[var(--claude-sidebar-accent)] relative" style="border-color: var(--claude-border); color: var(--claude-foreground);" aria-label="通知">
+                        <i data-lucide="bell" class="w-[18px] h-[18px]"></i>
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style="background: var(--claude-brand-500);"></span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Page content -->
+            <div class="flex-1 max-w-[1180px] w-full px-8 py-8">
+                <!-- Page Header -->
+                <div class="mb-6">
+                    <p class="text-sm mb-1" style="color: var(--claude-muted-foreground);">学习管理</p>
+                    <h1 class="text-2xl font-semibold mb-1" style="color: var(--claude-card-foreground); font-family: var(--claude-font-sans); text-wrap: balance; word-break: keep-all; overflow-wrap: break-word;">数据录入与管理</h1>
+                    <p class="text-sm" style="color: var(--claude-secondary-foreground);">录入学习记录、成绩和健康数据</p>
+                </div>
+
+                <!-- Tab Bar -->
+                <div class="flex border-b mb-6 overflow-x-auto no-scrollbar" style="border-color: var(--claude-border);">
+                    <button type="button" class="px-4 py-3 text-sm font-semibold whitespace-nowrap transition-colors duration-150" style="color: var(--claude-card-foreground); border-bottom: 2px solid var(--claude-brand-500); margin-bottom: -1px;">学习记录</button>
+                    <button type="button" class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors duration-150 hover:opacity-80" style="color: var(--claude-muted-foreground);">成绩录入</button>
+                    <button type="button" class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors duration-150 hover:opacity-80" style="color: var(--claude-muted-foreground);">身体健康</button>
+                    <button type="button" class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors duration-150 hover:opacity-80" style="color: var(--claude-muted-foreground);">心理健康</button>
+                    <button type="button" class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors duration-150 hover:opacity-80" style="color: var(--claude-muted-foreground);">社交健康</button>
+                    <button type="button" class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors duration-150 hover:opacity-80" style="color: var(--claude-muted-foreground);">个人信息</button>
+                    <button type="button" class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors duration-150 hover:opacity-80" style="color: var(--claude-muted-foreground);">课程管理</button>
+                </div>
+
+                <!-- Form Panel -->
+                <section class="rounded-[20px] border p-6 mb-6" style="background: var(--claude-card); border-color: var(--claude-border);">
+                    <!-- Panel header -->
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-[17px] font-semibold" style="color: var(--claude-card-foreground); font-family: var(--claude-font-sans);">学习记录</h2>
+                        <button type="button" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm border transition-colors duration-150 hover:bg-[var(--claude-sidebar-accent)]" style="color: var(--claude-foreground); border-color: var(--claude-border);">
+                            <span data-icon class="w-4 h-4 shrink-0" style="-webkit-mask-image: url('../assets/icons/dl_builtin_claude/arrow-right.svg'); mask-image: url('../assets/icons/dl_builtin_claude/arrow-right.svg');"></span>
+                            <span>查看历史</span>
+                        </button>
+                    </div>
+
+                    <!-- Two-column form grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Left Column -->
+                        <div class="flex flex-col gap-5">
+                            <!-- 日期 -->
+                            <div>
+                                <label class="block text-[13px] font-medium mb-1.5" style="color: var(--claude-card-foreground);">学习日期</label>
+                                <input type="date" value="2024-01-15" class="w-full h-11 px-3 rounded-lg border text-sm outline-none transition-colors duration-150" style="background: var(--claude-background); border-color: var(--claude-border); color: var(--claude-foreground); font-family: var(--claude-font-sans);" onfocus="this.style.borderColor='var(--claude-brand-500)'" onblur="this.style.borderColor='var(--claude-border)'">
+                            </div>
+
+                            <!-- 课程选择 -->
+                            <div>
+                                <label class="block text-[13px] font-medium mb-1.5" style="color: var(--claude-card-foreground);">选择课程</label>
+                                <div class="relative">
+                                    <select class="w-full h-11 px-3 pr-10 rounded-lg border text-sm appearance-none outline-none transition-colors duration-150" style="background: var(--claude-background); border-color: var(--claude-border); color: var(--claude-foreground); font-family: var(--claude-font-sans);" onfocus="this.style.borderColor='var(--claude-brand-500)'" onblur="this.style.borderColor='var(--claude-border)'">
+                                        <option value="" disabled selected>请选择课程</option>
+                                        <option>高等数学</option>
+                                        <option>线性代数</option>
+                                        <option>大学英语</option>
+                                        <option>数据结构</option>
+                                        <option>操作系统</option>
+                                    </select>
+                                    <span data-icon class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style="-webkit-mask-image: url('../assets/icons/dl_builtin_claude/chevron-down.svg'); mask-image: url('../assets/icons/dl_builtin_claude/chevron-down.svg'); color: var(--claude-muted-foreground);"></span>
+                                </div>
+                            </div>
+
+                            <!-- 学习时长 -->
+                            <div>
+                                <label class="block text-[13px] font-medium mb-1.5" style="color: var(--claude-card-foreground);">学习时长（分钟）</label>
+                                <input type="number" placeholder="0" min="0" class="w-full h-11 px-3 rounded-lg border text-sm outline-none transition-colors duration-150" style="background: var(--claude-background); border-color: var(--claude-border); color: var(--claude-foreground); font-family: var(--claude-font-sans);" onfocus="this.style.borderColor='var(--claude-brand-500)'" onblur="this.style.borderColor='var(--claude-border)'">
+                            </div>
+                        </div>
+
+                        <!-- Right Column -->
+                        <div class="flex flex-col gap-5">
+                            <!-- 学习类型 -->
+                            <div>
+                                <label class="block text-[13px] font-medium mb-1.5" style="color: var(--claude-card-foreground);">学习类型</label>
+                                <div class="relative">
+                                    <select class="w-full h-11 px-3 pr-10 rounded-lg border text-sm appearance-none outline-none transition-colors duration-150" style="background: var(--claude-background); border-color: var(--claude-border); color: var(--claude-foreground); font-family: var(--claude-font-sans);" onfocus="this.style.borderColor='var(--claude-brand-500)'" onblur="this.style.borderColor='var(--claude-border)'">
+                                        <option value="" disabled selected>请选择类型</option>
+                                        <option>课堂学习</option>
+                                        <option>自学</option>
+                                        <option>实验课</option>
+                                        <option>复习</option>
+                                    </select>
+                                    <span data-icon class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style="-webkit-mask-image: url('../assets/icons/dl_builtin_claude/chevron-down.svg'); mask-image: url('../assets/icons/dl_builtin_claude/chevron-down.svg'); color: var(--claude-muted-foreground);"></span>
+                                </div>
+                            </div>
+
+                            <!-- 专注度自评 -->
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <label class="block text-[13px] font-medium" style="color: var(--claude-card-foreground);">专注度自评 (0-100)</label>
+                                    <span class="text-sm font-medium tabular-nums" style="color: var(--claude-brand-500); font-family: var(--claude-font-mono);">75</span>
+                                </div>
+                                <input type="range" min="0" max="100" value="75" class="w-full h-2 rounded-full appearance-none cursor-pointer" style="background: var(--claude-border); accent-color: var(--claude-brand-500);">
+                            </div>
+
+                            <!-- 情绪状态 -->
+                            <div>
+                                <label class="block text-[13px] font-medium mb-2" style="color: var(--claude-card-foreground);">情绪状态</label>
+                                <div class="flex gap-2 flex-wrap">
+                                    <button type="button" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border whitespace-nowrap transition-colors duration-150" style="background: var(--claude-brand-100, #f8e3d8); color: var(--claude-brand-500); border-color: transparent;">
+                                        <span>😊</span><span>很好</span>
+                                    </button>
+                                    <button type="button" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border whitespace-nowrap transition-colors duration-150 hover:bg-[var(--claude-sidebar-accent)]" style="color: var(--claude-foreground); border-color: var(--claude-border); background: transparent;">
+                                        <span>🙂</span><span>良好</span>
+                                    </button>
+                                    <button type="button" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border whitespace-nowrap transition-colors duration-150 hover:bg-[var(--claude-sidebar-accent)]" style="color: var(--claude-foreground); border-color: var(--claude-border); background: transparent;">
+                                        <span>😐</span><span>一般</span>
+                                    </button>
+                                    <button type="button" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border whitespace-nowrap transition-colors duration-150 hover:bg-[var(--claude-sidebar-accent)]" style="color: var(--claude-foreground); border-color: var(--claude-border); background: transparent;">
+                                        <span>😔</span><span>不好</span>
+                                    </button>
+                                    <button type="button" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border whitespace-nowrap transition-colors duration-150 hover:bg-[var(--claude-sidebar-accent)]" style="color: var(--claude-foreground); border-color: var(--claude-border); background: transparent;">
+                                        <span>😢</span><span>很差</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 学习内容描述 - full width -->
+                        <div class="md:col-span-2">
+                            <label class="block text-[13px] font-medium mb-1.5" style="color: var(--claude-card-foreground);">学习内容描述</label>
+                            <textarea rows="4" placeholder="描述今天的学习内容..." class="w-full min-h-[100px] px-3 py-2.5 rounded-lg border text-sm outline-none resize-y transition-colors duration-150" style="background: var(--claude-background); border-color: var(--claude-border); color: var(--claude-foreground); font-family: var(--claude-font-sans);" onfocus="this.style.borderColor='var(--claude-brand-500)'" onblur="this.style.borderColor='var(--claude-border)'"></textarea>
+                        </div>
+
+                        <!-- Submit area - full width -->
+                        <div class="md:col-span-2 flex items-center gap-3">
+                            <button type="button" class="inline-flex items-center justify-center px-6 h-11 rounded-lg text-sm font-medium text-white whitespace-nowrap transition-colors duration-150 hover:opacity-90" style="background: var(--claude-brand-500);">提交记录</button>
+                            <button type="button" class="inline-flex items-center justify-center px-6 h-11 rounded-lg text-sm font-medium border whitespace-nowrap transition-colors duration-150 hover:bg-[var(--claude-sidebar-accent)]" style="color: var(--claude-foreground); border-color: var(--claude-border); background: transparent;">重置</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- History Table Panel -->
+                <section class="rounded-[20px] border p-6" style="background: var(--claude-card); border-color: var(--claude-border);">
+                    <!-- Panel header -->
+                    <div class="flex items-center justify-between mb-5 gap-4">
+                        <h2 class="text-[17px] font-semibold shrink-0" style="color: var(--claude-card-foreground); font-family: var(--claude-font-sans);">学习记录历史</h2>
+                        <div class="relative flex-1 max-w-xs">
+                            <span data-icon class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style="-webkit-mask-image: url('../assets/icons/dl_builtin_claude/funnel.svg'); mask-image: url('../assets/icons/dl_builtin_claude/funnel.svg'); color: var(--claude-muted-foreground);"></span>
+                            <input type="text" placeholder="搜索..." class="w-full h-9 pl-9 pr-3 rounded-lg border text-sm outline-none transition-colors duration-150" style="background: var(--claude-background); border-color: var(--claude-border); color: var(--claude-foreground); font-family: var(--claude-font-sans);" onfocus="this.style.borderColor='var(--claude-brand-500)'" onblur="this.style.borderColor='var(--claude-border)'">
+                        </div>
+                    </div>
+
+                    <!-- Data table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr style="border-bottom: 2px solid var(--claude-border);">
+                                    <th class="text-left px-4 py-3 text-[12px] font-medium uppercase tracking-[0.04em] whitespace-nowrap min-w-[100px]" style="color: var(--claude-muted-foreground);">日期</th>
+                                    <th class="text-left px-4 py-3 text-[12px] font-medium uppercase tracking-[0.04em] whitespace-nowrap min-w-[120px]" style="color: var(--claude-muted-foreground);">课程</th>
+                                    <th class="text-left px-4 py-3 text-[12px] font-medium uppercase tracking-[0.04em] whitespace-nowrap min-w-[80px]" style="color: var(--claude-muted-foreground);">时长</th>
+                                    <th class="text-left px-4 py-3 text-[12px] font-medium uppercase tracking-[0.04em] whitespace-nowrap min-w-[80px]" style="color: var(--claude-muted-foreground);">专注度</th>
+                                    <th class="text-left px-4 py-3 text-[12px] font-medium uppercase tracking-[0.04em] whitespace-nowrap min-w-[80px]" style="color: var(--claude-muted-foreground);">情绪</th>
+                                    <th class="text-right px-4 py-3 text-[12px] font-medium uppercase tracking-[0.04em] whitespace-nowrap min-w-[60px]" style="color: var(--claude-muted-foreground);">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="transition-colors duration-100 hover:bg-[var(--claude-sidebar-accent)]" style="border-bottom: 1px solid var(--claude-border);">
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">2024-01-15</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">高等数学</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">120分钟</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground); font-family: var(--claude-font-mono);">85分</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">很好</td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-150" style="color: var(--claude-muted-foreground);" onmouseover="this.style.color='var(--claude-error-500)'; this.style.background='var(--claude-sidebar-accent)'" onmouseout="this.style.color='var(--claude-muted-foreground)'; this.style.background='transparent'" aria-label="删除">
+                                            <span data-icon class="w-4 h-4" style="-webkit-mask-image: url('../assets/icons/dl_builtin_claude/trash-2.svg'); mask-image: url('../assets/icons/dl_builtin_claude/trash-2.svg');"></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="transition-colors duration-100 hover:bg-[var(--claude-sidebar-accent)]" style="border-bottom: 1px solid var(--claude-border);">
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">2024-01-14</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">线性代数</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">90分钟</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground); font-family: var(--claude-font-mono);">72分</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">良好</td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-150" style="color: var(--claude-muted-foreground);" onmouseover="this.style.color='var(--claude-error-500)'; this.style.background='var(--claude-sidebar-accent)'" onmouseout="this.style.color='var(--claude-muted-foreground)'; this.style.background='transparent'" aria-label="删除">
+                                            <span data-icon class="w-4 h-4" style="-webkit-mask-image: url('../assets/icons/dl_builtin_claude/trash-2.svg'); mask-image: url('../assets/icons/dl_builtin_claude/trash-2.svg');"></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="transition-colors duration-100 hover:bg-[var(--claude-sidebar-accent)]" style="border-bottom: 1px solid var(--claude-border);">
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">2024-01-14</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">大学英语</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">60分钟</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground); font-family: var(--claude-font-mono);">90分</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">很好</td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-150" style="color: var(--claude-muted-foreground);" onmouseover="this.style.color='var(--claude-error-500)'; this.style.background='var(--claude-sidebar-accent)'" onmouseout="this.style.color='var(--claude-muted-foreground)'; this.style.background='transparent'" aria-label="删除">
+                                            <span data-icon class="w-4 h-4" style="-webkit-mask-image: url('../assets/icons/dl_builtin_claude/trash-2.svg'); mask-image: url('../assets/icons/dl_builtin_claude/trash-2.svg');"></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="transition-colors duration-100 hover:bg-[var(--claude-sidebar-accent)]" style="border-bottom: 1px solid var(--claude-border);">
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">2024-01-13</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">数据结构</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">150分钟</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground); font-family: var(--claude-font-mono);">65分</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">一般</td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-150" style="color: var(--claude-muted-foreground);" onmouseover="this.style.color='var(--claude-error-500)'; this.style.background='var(--claude-sidebar-accent)'" onmouseout="this.style.color='var(--claude-muted-foreground)'; this.style.background='transparent'" aria-label="删除">
+                                            <span data-icon class="w-4 h-4" style="-webkit-mask-image: url('../assets/icons/dl_builtin_claude/trash-2.svg'); mask-image: url('../assets/icons/dl_builtin_claude/trash-2.svg');"></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="transition-colors duration-100 hover:bg-[var(--claude-sidebar-accent)]">
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">2024-01-12</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">高等数学</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">100分钟</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground); font-family: var(--claude-font-mono);">78分</td>
+                                    <td class="px-4 py-3 text-sm whitespace-nowrap" style="color: var(--claude-foreground);">良好</td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-150" style="color: var(--claude-muted-foreground);" onmouseover="this.style.color='var(--claude-error-500)'; this.style.background='var(--claude-sidebar-accent)'" onmouseout="this.style.color='var(--claude-muted-foreground)'; this.style.background='transparent'" aria-label="删除">
+                                            <span data-icon class="w-4 h-4" style="-webkit-mask-image: url('../assets/icons/dl_builtin_claude/trash-2.svg'); mask-image: url('../assets/icons/dl_builtin_claude/trash-2.svg');"></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

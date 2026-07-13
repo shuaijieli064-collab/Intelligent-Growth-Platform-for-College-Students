@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成长档案 — 大学生智能成长平台</title>
+    <style id="theme-vars">
+/* Source: structured-spec */
+/* Brand fonts — Anthropic official: Newsreader (editorial display/slogan) +
+   Poppins (compact UI) + Lora (reading). Mono kept for code/token surfaces. */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Newsreader:ital,opsz,wght@0,18..72,300;0,18..72,400;0,18..72,500;1,18..72,400&family=Geist+Mono:wght@400;500&display=swap');
+/* ============================================================
+   Token model
+   1) Primitives — 7 key color cards as 10-step scales (50→900).
+      These are the single source of truth (mirrored in the linshi
+      preview tool). The flagged "standard" step per group:
+        brand-500 · text-800 · bg-100 · icon-700 · border-300 · success-500 · error-500
+   2) Semantic tokens — reference the primitives above (no raw hex
+      duplicates). These are the API consumed by preview / ui_kits /
+      components.
+   3) Non-color tokens — font, spacing, radius, shadow, type.
+   ============================================================ */
+:root {
+  
+  /* solo-design consumption aliases: explicit prefix for fill-html-head.mjs */
+  --claude-background: var(--background, #ffffff);
+  --claude-foreground: var(--foreground, #0f172a);
+  --claude-card: var(--card, var(--background));
+  --claude-card-foreground: var(--card-foreground, var(--foreground));
+  --claude-popover: var(--popover, var(--card));
+  --claude-popover-foreground: var(--popover-foreground, var(--card-foreground, var(--foreground)));
+  --claude-primary: var(--primary, #111827);
+  --claude-primary-foreground: var(--primary-foreground, #ffffff);
+  --claude-secondary: var(--secondary, var(--muted, var(--card)));
+  --claude-secondary-foreground: var(--secondary-foreground, var(--foreground));
+  --claude-muted: var(--muted, var(--card));
+  --claude-muted-foreground: var(--muted-foreground, var(--foreground));
+  --claude-accent: var(--accent, var(--secondary, var(--muted, var(--card))));
+  --claude-accent-foreground: var(--accent-foreground, var(--foreground));
+  --claude-destructive: var(--destructive, #ef4444);
+  --claude-destructive-foreground: var(--destructive-foreground, #ffffff);
+  --claude-border: var(--border, currentColor);
+  --claude-input: var(--input, var(--border));
+  --claude-ring: var(--ring, var(--primary));
+  --claude-chart-1: var(--chart-1, var(--primary));
+  --claude-chart-2: var(--chart-2, var(--secondary, var(--primary)));
+  --claude-chart-3: var(--chart-3, var(--accent, var(--primary)));
+  --claude-chart-4: var(--chart-4, var(--muted-foreground, var(--foreground)));
+  --claude-chart-5: var(--chart-5, var(--foreground));
+  --claude-sidebar: var(--sidebar, var(--background));
+  --claude-sidebar-foreground: var(--sidebar-foreground, var(--foreground));
+  --claude-sidebar-primary: var(--sidebar-primary, var(--primary));
+  --claude-sidebar-primary-foreground: var(--sidebar-primary-foreground, var(--primary-foreground));
+  --claude-sidebar-accent: var(--sidebar-accent, var(--accent, var(--muted, var(--card))));
+  --claude-sidebar-accent-foreground: var(--sidebar-accent-foreground, var(--accent-foreground, var(--foreground)));
+
+/* ===== 1) Primitive scales · key color cards (10 steps, 50→900) ===== */
+  /* brand — standard: --brand-500 #c96442 */
+  --brand-50: #fbf2ed;
+  --brand-100: #f4e0d5;
+  --brand-200: #ebc6b6;
+  --brand-300: #e0a892;
+  --brand-400: #d6866a;
+  --brand-500: #c96442;
+  --brand-600: #b0562f;
+  --brand-700: #934828;
+  --brand-800: #753a22;
+  --brand-900: #582e1d;
+  /* text — standard: --text-800 #3d3929 */
+  --text-50: #f6f5f0;
+  --text-100: #ece9de;
+  --text-200: #dad9d4;
+  --text-300: #c2c0b6;
+  --text-400: #9b988c;
+  --text-500: #6e6d68;
+  --text-600: #535146;
+  --text-700: #46443b;
+  --text-800: #3d3929;
+  --text-900: #28261b;
+  /* background — standard: --bg-100 #faf9f5 */
+  --bg-50: #ffffff;
+  --bg-100: #faf9f5;
+  --bg-200: #f5f4ef;
+  --bg-300: #ede9de;
+  --bg-400: #e3e0d4;
+  --bg-500: #dad9d4;
+  --bg-600: #cdcabf;
+  --bg-700: #b4b2a7;
+  --bg-800: #8a887e;
+  --bg-900: #535146;
+  /* icon — standard: --icon-700 #3d3929 */
+  --icon-50: #ffffff;
+  --icon-100: #dad9d4;
+  --icon-200: #c2c0b6;
+  --icon-300: #9b988c;
+  --icon-400: #6e6d68;
+  --icon-500: #535146;
+  --icon-600: #46443b;
+  --icon-700: #3d3929;
+  --icon-800: #28261b;
+  --icon-900: #141413;
+  /* border — standard: --border-300 #dad9d4 */
+  --border-50: #f0efe9;
+  --border-100: #ebebeb;
+  --border-200: #e3e0d4;
+  --border-300: #dad9d4;
+  --border-400: #cdcabf;
+  --border-500: #b4b2a7;
+  --border-600: #9b988c;
+  --border-700: #6e6d68;
+  --border-800: #535146;
+  --border-900: #3d3929;
+  /* state · success — standard: --success-500 #788c5d */
+  --success-50: #f0f3ea;
+  --success-100: #e7ecdd;
+  --success-200: #d3dcc1;
+  --success-300: #b8c69e;
+  --success-400: #9aac79;
+  --success-500: #788c5d;
+  --success-600: #647649;
+  --success-700: #4f5d3a;
+  --success-800: #3d482d;
+  --success-900: #2b331f;
+  /* state · error — standard: --error-500 #d64545 */
+  --error-50: #fcecea;
+  --error-100: #f7dedb;
+  --error-200: #f3c4bf;
+  --error-300: #eb9d96;
+  --error-400: #e0716a;
+  --error-500: #d64545;
+  --error-600: #b83636;
+  --error-700: #962c2c;
+  --error-800: #732222;
+  --error-900: #531818;
+
+  /* ===== 2) Semantic tokens (reference the primitives above) ===== */
+  /* bg */
+  --background: var(--bg-100);
+  --card: var(--bg-200);
+  --popover: var(--bg-50);
+  --muted: var(--bg-300);
+  /* text */
+  --foreground: var(--text-800);
+  --card-foreground: var(--icon-900);
+  --popover-foreground: var(--text-900);
+  --primary-foreground: #ffffff;
+  --secondary-foreground: var(--text-600);
+  --muted-foreground: var(--text-500);
+  --accent-foreground: var(--text-900);
+  --destructive-foreground: #ffffff;
+  /* semantic */
+  --primary: var(--brand-500);
+  --secondary: #e9e6dc;
+  --accent: var(--secondary);
+  --input: var(--border-500);
+  --ring: var(--brand-500);
+  --border: var(--border-300);
+  /* status */
+  --destructive: var(--error-500);
+  --success: var(--success-500);
+  --success-foreground: #ffffff;
+  --error: var(--error-500);
+  --error-foreground: #ffffff;
+  /* chart */
+  --chart-1: #b05730;
+  --chart-2: #9c87f5;
+  --chart-3: #ded8c4;
+  --chart-4: #dbd3f0;
+  --chart-5: #b4552d;
+  /* sidebar */
+  --sidebar: #f5f4ee;
+  --sidebar-foreground: #3d3d3a;
+  --sidebar-primary: var(--brand-500);
+  --sidebar-primary-foreground: #fbfbfb;
+  --sidebar-accent: #e9e6dc;
+  --sidebar-accent-foreground: #343434;
+  --sidebar-border: var(--border-100);
+  --sidebar-ring: #b5b5b5;
+
+  /* ===== 3) Non-color tokens ===== */
+  /* font — display (Newsreader) for slogans/headlines, sans (Poppins) for compact UI, serif (Lora) for reading surfaces */
+  --font-display: Newsreader, Georgia, ui-serif, serif;
+  --font-sans: Poppins, ui-sans-serif, system-ui, sans-serif;
+  --font-serif: Lora, Georgia, ui-serif, serif;
+  --font-mono: Geist Mono, ui-monospace, monospace;
+  /* spacing */
+  --spacing: 0.25rem;
+  /* radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius: 1rem;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+  /* shadow */
+  --shadow-x: 0;
+  --shadow-y: 1px;
+  --shadow-blur: 3px;
+  --shadow-spread: 0px;
+  --shadow-opacity: 0.1;
+  --shadow-color: #000000;
+  --shadow-2xs: 0 1px 3px 0px rgba(0, 0, 0, 0.05);
+  --shadow-xs: 0 1px 3px 0px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow: 0 1px 3px 0px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 1px 3px 0px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 1px 3px 0px rgba(0, 0, 0, 0.1), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 1px 3px 0px rgba(0, 0, 0, 0.1), 0 8px 10px -1px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 1px 3px 0px rgba(0, 0, 0, 0.25);
+  /* type */
+  --tracking-normal: 0em;
+}
+
+.dark {
+  /* ===== 1) Primitive scales · key color cards (10 steps, 50→900) ===== */
+  /* brand — standard: --brand-500 #d97757 */
+  --brand-50: #3a2a22;
+  --brand-100: #4d3528;
+  --brand-200: #6b4533;
+  --brand-300: #8a5740;
+  --brand-400: #b0683f;
+  --brand-500: #d97757;
+  --brand-600: #e08d6f;
+  --brand-700: #e8a98f;
+  --brand-800: #f0c6b3;
+  --brand-900: #f8e3d8;
+  /* text — standard: --text-800 #f1f1ef */
+  --text-50: #1b1b19;
+  --text-100: #2c2c2b;
+  --text-200: #46443b;
+  --text-300: #6e6d68;
+  --text-400: #908e84;
+  --text-500: #b7b5a9;
+  --text-600: #c3c0b6;
+  --text-700: #d8d6cd;
+  --text-800: #f1f1ef;
+  --text-900: #faf9f5;
+  /* background — standard: --bg-100 #262624 */
+  --bg-50: #1b1b19;
+  --bg-100: #262624;
+  --bg-200: #2c2c2b;
+  --bg-300: #30302e;
+  --bg-400: #3e3e38;
+  --bg-500: #4a4a43;
+  --bg-600: #52514a;
+  --bg-700: #6e6d68;
+  --bg-800: #908e84;
+  --bg-900: #b7b5a9;
+  /* icon — standard: --icon-700 #f1f1ef */
+  --icon-50: #1b1b19;
+  --icon-100: #2c2c2b;
+  --icon-200: #46443b;
+  --icon-300: #6e6d68;
+  --icon-400: #908e84;
+  --icon-500: #b7b5a9;
+  --icon-600: #d8d6cd;
+  --icon-700: #f1f1ef;
+  --icon-800: #f8f8f6;
+  --icon-900: #ffffff;
+  /* border — standard: --border-300 #3e3e38 */
+  --border-50: #1f1e1d;
+  --border-100: #2c2c2b;
+  --border-200: #343430;
+  --border-300: #3e3e38;
+  --border-400: #4a4a43;
+  --border-500: #52514a;
+  --border-600: #6e6d68;
+  --border-700: #908e84;
+  --border-800: #b7b5a9;
+  --border-900: #d8d6cd;
+  /* state · success — standard: --success-500 #8ca06f */
+  --success-50: #232a1c;
+  --success-100: #2e3823;
+  --success-200: #3f4d30;
+  --success-300: #556640;
+  --success-400: #708353;
+  --success-500: #8ca06f;
+  --success-600: #a3b58a;
+  --success-700: #bccaa8;
+  --success-800: #d6dfc8;
+  --success-900: #edf2e4;
+  /* state · error — standard: --error-500 #ef4444 */
+  --error-50: #3a1f1f;
+  --error-100: #4d2424;
+  --error-200: #6e2c2c;
+  --error-300: #93302f;
+  --error-400: #c43a39;
+  --error-500: #ef4444;
+  --error-600: #f26b6b;
+  --error-700: #f59292;
+  --error-800: #f9b9b9;
+  --error-900: #fcdede;
+
+  /* ===== 2) Semantic tokens (reference the primitives above) ===== */
+  /* bg */
+  --background: var(--bg-100);
+  --card: var(--bg-200);
+  --popover: var(--bg-300);
+  --muted: var(--bg-50);
+  /* text */
+  --foreground: var(--text-800);
+  --card-foreground: var(--text-900);
+  --popover-foreground: #e5e5e2;
+  --primary-foreground: #141413;
+  --secondary-foreground: var(--bg-300);
+  --muted-foreground: var(--text-500);
+  --accent-foreground: #f5f4ee;
+  --destructive-foreground: #ffffff;
+  /* accent */
+  --primary: var(--brand-500);
+  --secondary: var(--text-900);
+  --accent: #1a1915;
+  --input: var(--border-500);
+  --ring: var(--brand-500);
+  /* border */
+  --border: var(--border-300);
+  /* status */
+  --destructive: var(--error-500);
+  --success: var(--success-500);
+  --success-foreground: #141413;
+  --error: var(--error-500);
+  --error-foreground: #ffffff;
+  /* chart */
+  --chart-1: #b05730;
+  --chart-2: #9c87f5;
+  --chart-3: #1a1915;
+  --chart-4: #2f2b48;
+  --chart-5: #b4552d;
+  /* sidebar */
+  --sidebar: #1f1e1d;
+  --sidebar-foreground: #c3c0b6;
+  --sidebar-primary: #343434;
+  --sidebar-primary-foreground: #fbfbfb;
+  --sidebar-accent: #0f0f0e;
+  --sidebar-accent-foreground: #c3c0b6;
+  --sidebar-border: #ebebeb;
+  --sidebar-ring: #b5b5b5;
+
+  /* ===== 3) Non-color tokens ===== */
+  /* font — sans (Poppins) for headings + compact UI, serif (Lora) for reading surfaces */
+  --font-display: Newsreader, Georgia, ui-serif, serif;
+  --font-sans: Poppins, ui-sans-serif, system-ui, sans-serif;
+  --font-serif: Lora, Georgia, ui-serif, serif;
+  --font-mono: Geist Mono, ui-monospace, monospace;
+  /* radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius: 1rem;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+  /* shadow */
+  --shadow-x: 0;
+  --shadow-y: 1px;
+  --shadow-blur: 3px;
+  --shadow-spread: 0px;
+  --shadow-opacity: 0.1;
+  --shadow-color: #000000;
+  --shadow-2xs: 0 1px 3px 0px rgba(0, 0, 0, 0.05);
+  --shadow-xs: 0 1px 3px 0px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow: 0 1px 3px 0px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 1px 3px 0px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 1px 3px 0px rgba(0, 0, 0, 0.1), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 1px 3px 0px rgba(0, 0, 0, 0.1), 0 8px 10px -1px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 1px 3px 0px rgba(0, 0, 0, 0.25);
+}
+
+    </style>
+    <style id="component-vars">
+/* ═══════════════════════════════════════════════════════════════
+   components.css — Design System Component Definitions
+   Auto-extracted from preview/component-*.html
+   DO NOT EDIT MANUALLY — regenerate via extract-components-css.mjs
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Badge ─────────────────────────────────────────────────── */
+/* @anatomy
+   <main class="preview">
+   <section class="section">
+   <span class="label">Filled</span>
+   <div class="row">
+   <span class="badge filled">Essay</span>
+   <span class="badge filled">Editorial</span>
+   <span class="badge filled is-disabled" aria-disabled="true">Essay</span>
+   </div>
+   </section>
+   <section class="section">
+   <span class="label">Muted</span>
+   <div class="row">
+   <span class="badge muted">Editorial</span>
+   <span class="badge muted is-disabled" aria-disabled="true">Essay</span>
+   </div>
+   </section>
+   <section class="section">
+   <span class="label">Outline</span>
+   <div class="row">
+   <span class="badge outline">Essay</span>
+   <span class="badge outline">Editorial</span>
+   <span class="badge outline is-disabled" aria-disabled="true">Editorial</span>
+   </div>
+   </section>
+   </main>
+*/
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;padding:clamp(20px,3vw,32px);background:var(--background);color:var(--foreground);font-family:var(--font-serif)}
+.preview{width:min(100%,760px);margin:0 auto;display:grid;gap:clamp(24px,4vw,32px)}
+.section{display:grid;gap:14px}
+.label{display:block;font:600 10px/1.2 var(--font-serif);letter-spacing:.14em;text-transform:uppercase;color:var(--muted-foreground)}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:clamp(18px,3vw,24px);border:1px solid var(--border);border-radius:calc(var(--radius) + 4px);background:var(--popover);box-shadow:var(--shadow-xs)}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:0 calc(var(--spacing)*3.5);border-radius:var(--radius);font:600 12px/1 var(--font-sans);letter-spacing:.01em;white-space:nowrap;transition:transform .16s ease,box-shadow .16s ease,background-color .16s ease,color .16s ease,border-color .16s ease}
+.badge:hover{transform:translateY(-1px)}
+.filled{background:var(--primary);color:var(--primary-foreground);border:1px solid transparent;box-shadow:var(--shadow-xs)}
+.filled:hover{box-shadow:var(--shadow-sm)}
+.muted{background:var(--muted);color:var(--foreground);border:1px solid transparent}
+.outline{background:var(--popover);color:var(--foreground);border:1px solid var(--border)}
+.is-disabled{pointer-events:none;box-shadow:none}
+.filled.is-disabled{background:var(--secondary);color:var(--muted-foreground);border-color:var(--border)}
+.muted.is-disabled{background:var(--card);color:var(--muted-foreground);border-color:transparent}
+.outline.is-disabled{background:var(--background);color:var(--muted-foreground)}
+@media (max-width:560px){
+  .row{padding:18px}
+}
+
+/* ── Button ────────────────────────────────────────────────── */
+/* @anatomy
+   <main class="preview">
+   <section class="section">
+   <span class="label">Primary</span>
+   <div class="examples">
+   <button class="btn primary" type="button">Start a new chat</button>
+   <button class="btn primary" type="button" disabled>Start a new chat</button>
+   </div>
+   </section>
+   <section class="section">
+   <span class="label">Secondary</span>
+   <div class="examples">
+   <button class="btn secondary" type="button">Open design guide</button>
+   <button class="btn secondary" type="button" disabled>Open design guide</button>
+   </div>
+   </section>
+   <section class="section">
+   <span class="label">Ghost</span>
+   <div class="examples">
+   <button class="btn ghost" type="button">Open design guide</button>
+   <button class="btn ghost" type="button" disabled>Open design guide</button>
+   </div>
+   </section>
+   </main>
+*/
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;padding:clamp(20px,3vw,32px);background:var(--background);color:var(--foreground);font:14px/1.5 var(--font-sans)}
+.preview{width:min(100%,760px);margin:0 auto;display:grid;gap:clamp(24px,4vw,32px)}
+.section{display:grid;gap:14px}
+.label{display:block;font:600 10px/1.2 var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted-foreground)}
+.examples{display:flex;flex-wrap:wrap;gap:12px 14px;align-items:center;padding:clamp(18px,3vw,24px);border:1px solid var(--border);border-radius:calc(var(--radius) + 4px);background:var(--popover);box-shadow:var(--shadow-xs)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border:1px solid transparent;border-radius:var(--radius);box-shadow:var(--shadow-sm);background:transparent;color:var(--foreground);font:600 14px/1.1 var(--font-sans);white-space:nowrap;transition:background-color .16s ease,color .16s ease,border-color .16s ease,box-shadow .16s ease}
+.btn:hover,.btn:focus-visible{box-shadow:var(--shadow-md)}
+.btn:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.btn:disabled{cursor:not-allowed;box-shadow:none}
+.primary{background:var(--primary);color:var(--primary-foreground)}
+.primary:disabled{background:var(--secondary);color:var(--muted-foreground);border-color:var(--border)}
+.secondary{background:var(--secondary);color:var(--foreground);border-color:var(--border)}
+.secondary:disabled{background:var(--background);color:var(--muted-foreground);border-color:var(--border)}
+.ghost{background:transparent;color:var(--foreground);box-shadow:none}
+.ghost:hover,.ghost:focus-visible{background:var(--muted)}
+.ghost:disabled{background:transparent;color:var(--muted-foreground);border-color:transparent}
+@media (max-width:560px){
+  .examples{gap:10px;padding:18px}
+  .btn{width:100%}
+}
+
+/* ── Card ──────────────────────────────────────────────────── */
+/* @anatomy
+   <main class="preview">
+   <section class="section">
+   <span class="label">Floating</span>
+   <div class="row">
+   <article class="card">
+   <p class="eyebrow">Reading Card</p>
+   <h2 class="title">Summarize this chapter</h2>
+   <p class="body">Claude Design System frames long-form AI assistant reading with soft elevation, calm spacing, and editorial rhythm.</p>
+   </article>
+   <article class="card disabled" aria-disabled="true">
+   <p class="eyebrow">Reading Card</p>
+   <h2 class="title">Context locked</h2>
+   <p class="body">This card shows the disabled state for unavailable annotations while keeping the same spacing and radius tokens.</p>
+   </article>
+   </div>
+   </section>
+   <section class="section">
+   <span class="label">Surface Contrast</span>
+   <div class="row">
+   <article class="card sunken">
+   <p class="eyebrow">Editorial Sidebar</p>
+   <h2 class="title">Session notes</h2>
+   <p class="body">A recessed surface keeps supporting prompts close to the page without competing with the main response.</p>
+   </article>
+   <article class="card emphasis">
+   <p class="eyebrow">Claude Design System</p>
+   <h2 class="title">Review before publish</h2>
+   <p class="body">High-priority AI assistant guidance uses the strongest contrast and deepest shadow for emphasis.</p>
+   </article>
+   </div>
+   </section>
+   </main>
+*/
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;padding:clamp(20px,3vw,32px);background:var(--background);color:var(--foreground);font-family:var(--font-serif)}
+.preview{width:min(100%,860px);margin:0 auto;display:grid;gap:clamp(24px,4vw,32px)}
+.section{display:grid;gap:14px}
+.label{display:block;font:600 10px/1.2 var(--font-serif);letter-spacing:.14em;text-transform:uppercase;color:var(--muted-foreground)}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px;align-items:stretch;padding:clamp(18px,3vw,24px);border:1px solid var(--border);border-radius:calc(var(--radius) + 4px);background:var(--popover);box-shadow:var(--shadow-xs)}
+.card{width:100%;min-height:150px;display:flex;flex-direction:column;padding:18px;overflow:hidden;border:1px solid var(--border);border-radius:var(--radius);background:var(--popover);box-shadow:var(--shadow-sm);transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+.card:hover{transform:translateY(-1px);box-shadow:var(--shadow-lg)}
+.eyebrow{margin:0 0 10px;font:600 10px/1.2 var(--font-serif);letter-spacing:.12em;text-transform:uppercase;color:var(--muted-foreground)}
+.title{margin:0 0 10px;font:600 21px/1.18 var(--font-sans);color:var(--foreground)}
+.body{margin:0;flex:1;font-size:14px;line-height:1.6;color:var(--secondary-foreground)}
+.disabled{background:var(--card);box-shadow:none;border-color:var(--border);pointer-events:none}
+.disabled .eyebrow{color:var(--muted-foreground)}
+.disabled .title{color:var(--foreground)}
+.disabled .body{color:var(--muted-foreground)}
+.sunken{background:var(--card);box-shadow:none}
+.sunken .body{color:var(--foreground)}
+.emphasis{background:var(--foreground);color:var(--background);border-color:transparent;box-shadow:var(--shadow-xl)}
+.emphasis .eyebrow{color:var(--secondary)}
+.emphasis .body,.emphasis .title{color:var(--background)}
+@media (max-width:640px){
+  .row{grid-template-columns:1fr;padding:18px}
+}
+
+/* ── Chat Bubble ───────────────────────────────────────────── */
+/* @anatomy
+   <main class="preview">
+   <section class="section">
+   <span class="label">User</span>
+   <div class="row">
+   <div class="bubble user">
+   <span class="meta">You · now</span>
+   <p class="copy">Recommend a writer for light reading.</p>
+   </div>
+   <div class="bubble user disabled" aria-disabled="true">
+   <span class="meta">You · queued</span>
+   <p class="copy">Recommend a writer for light reading.</p>
+   </div>
+   </div>
+   </section>
+   <section class="section">
+   <span class="label">Reply</span>
+   <div class="row">
+   <div class="bubble assistant">
+   <span class="meta">Claude Design System · 1m</span>
+   <p class="copy">Yes — start with Ordination.</p>
+   </div>
+   <div class="bubble assistant disabled" aria-disabled="true">
+   <span class="meta">Claude Design System · unavailable</span>
+   <p class="copy">Yes — start with Ordination.</p>
+   </div>
+   </div>
+   </section>
+   <section class="section">
+   <span class="label">Thread</span>
+   <div class="row">
+   <div class="thread">
+   <div class="bubble user">
+   <span class="meta">You · now</span>
+   <p class="copy">Recommend a writer for light reading.</p>
+   </div>
+   <div class="bubble assistant">
+   <span class="meta">Claude Design System · 1m</span>
+   <p class="copy">Yes — start with Ordination. I can also suggest Wang Zengqi if you want something warmer and more observant.</p>
+   </div>
+   </div>
+   </div>
+   </section>
+   </main>
+*/
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;padding:clamp(20px,3vw,32px);background:var(--background);color:var(--foreground);font:14px/1.55 var(--font-sans)}
+.preview{width:min(100%,760px);margin:0 auto;display:grid;gap:clamp(24px,4vw,32px)}
+.section{display:grid;gap:14px}
+.label{display:block;font:600 10px/1.1 var(--font-sans);letter-spacing:.12em;text-transform:uppercase;color:var(--muted-foreground)}
+.row{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;padding:clamp(18px,3vw,24px);border:1px solid var(--border);border-radius:calc(var(--radius) + 4px);background:var(--popover);box-shadow:var(--shadow-xs)}
+.bubble{display:grid;gap:8px;max-width:280px;padding:calc(var(--spacing)*3.5) calc(var(--spacing)*4);border-radius:calc(var(--radius) + 2px);box-shadow:var(--shadow-sm)}
+.user{background:var(--primary);color:var(--primary-foreground)}
+.assistant{background:var(--popover);color:var(--card-foreground);border:1px solid var(--border)}
+.meta{display:block;font:500 11px/1.3 var(--font-sans);letter-spacing:.01em}
+.user .meta{color:var(--primary-foreground);opacity:.78}
+.assistant .meta{color:var(--muted-foreground)}
+.copy{margin:0;font-size:14px;line-height:1.6}
+.disabled{box-shadow:none}
+.user.disabled{background:var(--secondary);color:var(--secondary-foreground)}
+.user.disabled .meta{color:var(--secondary-foreground);opacity:1}
+.assistant.disabled{background:var(--card);color:var(--muted-foreground)}
+.thread{display:grid;gap:12px;width:min(100%,360px);padding:calc(var(--spacing)*4);background:var(--popover);border:1px solid var(--border);border-radius:calc(var(--radius) + 6px);box-shadow:var(--shadow-sm)}
+@media (max-width:640px){
+  .row{padding:18px}
+  .bubble,.thread{max-width:100%;width:100%}
+}
+
+/* ── Input ─────────────────────────────────────────────────── */
+/* @anatomy
+   <main class="preview">
+   <section class="section">
+   <span class="label">Plain</span>
+   <div class="row">
+   <input class="field" type="text" placeholder="Search components…" aria-label="Claude Design System search input">
+   <input class="field" type="text" placeholder="Search components…" aria-label="Claude Design System search input disabled" disabled>
+   </div>
+   </section>
+   <section class="section">
+   <span class="label">Filled</span>
+   <div class="row">
+   <input class="field" type="text" value="Ask Claude anything" aria-label="Claude Design System prompt input">
+   <input class="field" type="text" value="Ask Claude anything" aria-label="Claude Design System prompt input disabled" disabled>
+   </div>
+   </section>
+   <section class="section">
+   <span class="label">Embedded</span>
+   <div class="row">
+   <label class="bar">
+   <input type="text" placeholder="Search components…" aria-label="Embedded search input">
+   <span class="dot"></span>
+   </label>
+   <label class="bar disabled">
+   <input type="text" value="Ask Claude anything" aria-label="Embedded prompt input disabled" disabled>
+   <span class="dot"></span>
+   </label>
+   </div>
+   </section>
+   </main>
+*/
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;padding:clamp(20px,3vw,32px);background:var(--background);color:var(--foreground);font:14px/1.4 var(--font-sans)}
+.preview{width:min(100%,760px);margin:0 auto;display:grid;gap:clamp(24px,4vw,32px)}
+.section{display:grid;gap:14px}
+.label{display:block;font:600 10px/1.2 var(--font-sans);letter-spacing:.12em;text-transform:uppercase;color:var(--muted-foreground)}
+.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:clamp(18px,3vw,24px);border:1px solid var(--border);border-radius:calc(var(--radius) + 4px);background:var(--popover);box-shadow:var(--shadow-xs)}
+.field,.bar{flex:1 1 280px;min-width:220px;height:40px;border:1px solid var(--border);border-radius:var(--radius);background:var(--background);box-shadow:var(--shadow-sm)}
+.field{padding:0 calc(var(--spacing)*3);color:var(--foreground);font:inherit}
+.field::placeholder,.bar input::placeholder{color:var(--muted-foreground)}
+.field:focus,.bar:focus-within{outline:none;border-color:var(--ring);box-shadow:var(--shadow-sm)}
+.field:disabled,.bar.disabled{background:var(--card);color:var(--muted-foreground);box-shadow:none}
+.bar{display:flex;align-items:center;gap:8px;padding:0 calc(var(--spacing)*3);background:var(--card);border-color:transparent}
+.bar input{flex:1;min-width:0;border:0;background:transparent;color:inherit;font:inherit;outline:none}
+.dot{width:8px;height:8px;border-radius:var(--radius-full);background:var(--muted-foreground);opacity:.5}
+@media (max-width:560px){
+  .row{padding:18px}
+  .field,.bar{flex-basis:100%;min-width:0}
+}
+
+/* ── Navigation ────────────────────────────────────────────── */
+/* @anatomy
+   <main class="preview">
+   <section class="section">
+   <span class="label">Tab Strip</span>
+   <div class="row">
+   <nav class="tabs" aria-label="Navigation tabs">
+   <button class="tab active" type="button">Web</button>
+   <button class="tab" type="button">Mobile</button>
+   <button class="tab" type="button">Library</button>
+   <button class="tab" type="button" disabled>Syncing</button>
+   </nav>
+   </div>
+   </section>
+   <section class="section">
+   <span class="label">Sidebar List</span>
+   <div class="row">
+   <aside class="rail" aria-label="Sidebar navigation">
+   <p class="brand">Claude Design System</p>
+   <div class="stack">
+   <button class="item active" type="button">Web</button>
+   <button class="item" type="button">Mobile</button>
+   <button class="item" type="button">Library</button>
+   <button class="item" type="button" disabled>Offline</button>
+   </div>
+   </aside>
+   </div>
+   </section>
+   <section class="section">
+   <span class="label">Bottom Nav</span>
+   <div class="row">
+   <nav class="bottom-nav" aria-label="Bottom navigation">
+   <button class="nav-item active" type="button"><span>✦</span><span>Explore</span></button>
+   <button class="nav-item" type="button"><span>▥</span><span>Library</span></button>
+   <button class="nav-item" type="button"><span>⚙</span><span>Settings</span></button>
+   </nav>
+   </div>
+   </section>
+   </main>
+*/
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;padding:clamp(20px,3vw,32px);background:var(--background);color:var(--foreground);font-family:var(--font-serif)}
+.preview{width:min(100%,860px);margin:0 auto;display:grid;gap:clamp(24px,4vw,32px)}
+.section{display:grid;gap:14px}
+.label{display:block;font:600 10px/1.2 var(--font-serif);letter-spacing:.14em;text-transform:uppercase;color:var(--muted-foreground)}
+.row{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;padding:clamp(18px,3vw,24px);border:1px solid var(--border);border-radius:calc(var(--radius) + 4px);background:var(--popover);box-shadow:var(--shadow-xs)}
+.tabs,.rail,.bottom-nav{border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-xs)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;max-width:100%;padding:6px;background:var(--card)}
+.tab,.item,.nav-item{appearance:none;border:1px solid transparent;background:transparent;color:var(--muted-foreground);font:600 13px/1.1 var(--font-sans);cursor:pointer;transition:background-color .16s ease,color .16s ease,border-color .16s ease,box-shadow .16s ease}
+.tab{padding:11px 15px;border-radius:calc(var(--radius) - 6px)}
+.tab:hover,.nav-item:hover{background:var(--popover);color:var(--foreground)}
+.item:hover{background:var(--sidebar-accent);color:var(--foreground)}
+.tab:focus-visible,.item:focus-visible,.nav-item:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.tab.active,.nav-item.active{background:var(--popover);color:var(--foreground);border-color:var(--border);box-shadow:var(--shadow-xs)}
+.tab.active{box-shadow:var(--shadow-sm)}
+.tab:disabled,.item:disabled,.nav-item:disabled{cursor:not-allowed;box-shadow:none;background:transparent;color:var(--muted-foreground)}
+.rail{width:236px;max-width:100%;padding:14px;background:var(--sidebar);color:var(--sidebar-foreground)}
+.brand{margin:0 0 12px;font:600 11px/1.2 var(--font-serif);letter-spacing:.14em;text-transform:uppercase;color:var(--sidebar-foreground)}
+.stack{display:grid;gap:8px}
+.item{width:100%;padding:12px 13px;border-radius:calc(var(--radius) - 8px);text-align:left;color:var(--sidebar-foreground);background:transparent}
+.item.active{background:var(--popover);color:var(--foreground);border-color:var(--sidebar-border);box-shadow:var(--shadow-xs)}
+.bottom-nav{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:min(100%,420px);padding:8px;background:var(--popover)}
+.nav-item{display:grid;gap:4px;justify-items:center;padding:12px 10px;border-radius:calc(var(--radius) - 6px)}
+@media (max-width:640px){
+  .row{padding:18px}
+  .tabs,.rail,.bottom-nav{width:100%}
+}
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--claude-background);
+    --color-foreground: var(--claude-foreground);
+    --color-card: var(--claude-card);
+    --color-card-foreground: var(--claude-card-foreground);
+    --color-popover: var(--claude-popover);
+    --color-popover-foreground: var(--claude-popover-foreground);
+    --color-primary: var(--claude-primary);
+    --color-primary-foreground: var(--claude-primary-foreground);
+    --color-secondary: var(--claude-secondary);
+    --color-secondary-foreground: var(--claude-secondary-foreground);
+    --color-muted: var(--claude-muted);
+    --color-muted-foreground: var(--claude-muted-foreground);
+    --color-accent: var(--claude-accent);
+    --color-accent-foreground: var(--claude-accent-foreground);
+    --color-destructive: var(--claude-destructive);
+    --color-destructive-foreground: var(--claude-destructive-foreground);
+    --color-border: var(--claude-border);
+    --color-input: var(--claude-input);
+    --color-ring: var(--claude-ring);
+    --color-chart-1: var(--claude-chart-1);
+    --color-chart-2: var(--claude-chart-2);
+    --color-chart-3: var(--claude-chart-3);
+    --color-chart-4: var(--claude-chart-4);
+    --color-chart-5: var(--claude-chart-5);
+    --color-sidebar: var(--claude-sidebar);
+    --color-sidebar-foreground: var(--claude-sidebar-foreground);
+    --color-sidebar-primary: var(--claude-sidebar-primary);
+    --color-sidebar-primary-foreground: var(--claude-sidebar-primary-foreground);
+    --color-sidebar-accent: var(--claude-sidebar-accent);
+    --color-sidebar-accent-foreground: var(--claude-sidebar-accent-foreground);
+  }
+  @layer base {
+    body { background: var(--claude-background); color: var(--claude-foreground); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body class="min-h-screen font-sans antialiased">
+    <main>
+      <div class="fixed inset-0 flex" style="font-family: var(--font-sans);">
+
+        <!-- ====== Sidebar ====== -->
+        <aside class="w-[230px] h-full flex flex-col shrink-0" style="background: var(--sidebar); border-right: 1px solid var(--sidebar-border); padding: 24px 16px;">
+
+          <!-- Brand area -->
+          <div class="flex items-center gap-3 mb-5">
+            <div class="w-[38px] h-[38px] shrink-0 flex items-center justify-center" style="border-radius: 10px; background: var(--brand-500);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/></svg>
+            </div>
+            <span class="truncate" style="font-family: var(--font-display); font-size: 17px; color: var(--sidebar-foreground);">智能成长平台</span>
+          </div>
+
+          <!-- Student selector -->
+          <div class="flex items-center gap-2 mb-6 px-3 cursor-pointer" style="height: 36px; border-radius: 8px; background: var(--sidebar-accent); color: var(--sidebar-foreground); font-size: 13px;">
+            <i data-lucide="user" class="w-4 h-4 shrink-0 opacity-50"></i>
+            <span class="truncate flex-1">张三 (2021001)</span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 shrink-0 opacity-40"></i>
+          </div>
+
+          <!-- Navigation -->
+          <nav class="flex-1 flex flex-col gap-1 overflow-y-auto no-scrollbar">
+
+            <!-- Group 1: 概览 -->
+            <div class="mb-2">
+              <span class="block px-3 mb-1.5 uppercase opacity-50" style="font-family: var(--font-sans); font-size: 10px; font-weight: 500; letter-spacing: 0.08em; color: var(--sidebar-foreground);">概览</span>
+              <a href="#" class="flex items-center gap-3 h-[44px] px-3 no-underline text-sidebar-foreground hover:bg-sidebar-accent focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer motion-reduce:transition-none transition-colors duration-150" style="font-size: 14px; font-weight: 500; border-radius: 12px;">
+                <i data-lucide="house" class="w-5 h-5 shrink-0"></i>
+                <span class="truncate">首页仪表盘</span>
+              </a>
+              <a href="#" class="flex items-center gap-3 h-[44px] px-3 no-underline text-sidebar-foreground hover:bg-sidebar-accent focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer motion-reduce:transition-none transition-colors duration-150" style="font-size: 14px; font-weight: 500; border-radius: 12px;">
+                <i data-lucide="scan-face" class="w-5 h-5 shrink-0"></i>
+                <span class="truncate">数字孪生</span>
+              </a>
+            </div>
+
+            <!-- Group 2: 学习 -->
+            <div class="mb-2">
+              <span class="block px-3 mb-1.5 uppercase opacity-50" style="font-family: var(--font-sans); font-size: 10px; font-weight: 500; letter-spacing: 0.08em; color: var(--sidebar-foreground);">学习</span>
+              <a href="#" class="flex items-center gap-3 h-[44px] px-3 no-underline text-sidebar-foreground hover:bg-sidebar-accent focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer motion-reduce:transition-none transition-colors duration-150" style="font-size: 14px; font-weight: 500; border-radius: 12px;">
+                <i data-lucide="pen-line" class="w-5 h-5 shrink-0"></i>
+                <span class="truncate">数据录入</span>
+              </a>
+              <a href="#" class="flex items-center gap-3 h-[44px] px-3 no-underline text-sidebar-foreground hover:bg-sidebar-accent focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer motion-reduce:transition-none transition-colors duration-150" style="font-size: 14px; font-weight: 500; border-radius: 12px;">
+                <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                <span class="truncate">成绩预测</span>
+              </a>
+              <a href="#" class="flex items-center gap-3 h-[44px] px-3 no-underline text-sidebar-foreground hover:bg-sidebar-accent focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer motion-reduce:transition-none transition-colors duration-150" style="font-size: 14px; font-weight: 500; border-radius: 12px;">
+                <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                <span class="truncate">知识图谱</span>
+              </a>
+              <a href="#" class="flex items-center gap-3 h-[44px] px-3 no-underline text-sidebar-foreground hover:bg-sidebar-accent focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer motion-reduce:transition-none transition-colors duration-150" style="font-size: 14px; font-weight: 500; border-radius: 12px;">
+                <i data-lucide="message-circle-more" class="w-5 h-5 shrink-0"></i>
+                <span class="truncate">AI 学习教练</span>
+              </a>
+              <a href="#" class="flex items-center gap-3 h-[44px] px-3 no-underline text-sidebar-foreground hover:bg-sidebar-accent focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer motion-reduce:transition-none transition-colors duration-150" style="font-size: 14px; font-weight: 500; border-radius: 12px;">
+                <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><line x1="8" y1="11" x2="8.01" y2="11"/><line x1="8" y1="16" x2="8.01" y2="16"/></svg>
+                <span class="truncate">学习计划</span>
+              </a>
+            </div>
+
+            <!-- Group 3: 监测 -->
+            <div class="mb-2">
+              <span class="block px-3 mb-1.5 uppercase opacity-50" style="font-family: var(--font-sans); font-size: 10px; font-weight: 500; letter-spacing: 0.08em; color: var(--sidebar-foreground);">监测</span>
+              <a href="#" class="flex items-center gap-3 h-[44px] px-3 no-underline text-sidebar-foreground hover:bg-sidebar-accent focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer motion-reduce:transition-none transition-colors duration-150" style="font-size: 14px; font-weight: 500; border-radius: 12px;">
+                <i data-lucide="triangle-alert" class="w-5 h-5 shrink-0"></i>
+                <span class="truncate">风险预警</span>
+              </a>
+              <a href="#" class="flex items-center gap-3 h-[44px] px-3 no-underline text-sidebar-foreground hover:bg-sidebar-accent focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer motion-reduce:transition-none transition-colors duration-150" style="font-size: 14px; font-weight: 500; border-radius: 12px;">
+                <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                <span class="truncate">专注度监测</span>
+              </a>
+            </div>
+
+            <!-- Group 4: 分析 -->
+            <div class="mb-2">
+              <span class="block px-3 mb-1.5 uppercase opacity-50" style="font-family: var(--font-sans); font-size: 10px; font-weight: 500; letter-spacing: 0.08em; color: var(--sidebar-foreground);">分析</span>
+              <a href="#" class="flex items-center gap-3 h-[44px] px-3 no-underline text-sidebar-foreground hover:bg-sidebar-accent focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer motion-reduce:transition-none transition-colors duration-150" style="font-size: 14px; font-weight: 500; border-radius: 12px;">
+                <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                <span class="truncate">数据可视化</span>
+              </a>
+              <a href="#" class="flex items-center gap-3 h-[44px] px-3 no-underline text-sidebar-foreground hover:bg-sidebar-accent focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer motion-reduce:transition-none transition-colors duration-150" style="font-size: 14px; font-weight: 500; border-radius: 12px;">
+                <i data-lucide="star" class="w-5 h-5 shrink-0"></i>
+                <span class="truncate">资源推荐</span>
+              </a>
+              <!-- 成长档案 — ACTIVE -->
+              <a href="#" class="flex items-center gap-3 h-[44px] no-underline cursor-pointer motion-reduce:transition-none transition-colors duration-150" style="background: var(--brand-100); color: var(--brand-700); padding: 0 12px 0 9px; font-size: 14px; font-weight: 500; border-radius: 12px; border-left: 3px solid var(--brand-500);" onmouseover="this.style.filter='brightness(0.97)'" onmouseout="this.style.filter='none'">
+                <i data-lucide="folder-open" class="w-5 h-5 shrink-0"></i>
+                <span class="truncate">成长档案</span>
+              </a>
+            </div>
+
+          </nav>
+
+          <!-- Bottom area -->
+          <div class="flex flex-col gap-1 mt-auto pt-4" style="border-top: 1px solid var(--sidebar-border);">
+            <a href="#" class="flex items-center gap-3 h-[44px] px-3 no-underline text-sidebar-foreground hover:bg-sidebar-accent focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer motion-reduce:transition-none transition-colors duration-150" style="font-size: 14px; font-weight: 500; border-radius: 12px;">
+              <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+              <span class="truncate">切换主题</span>
+            </a>
+            <span class="px-3" style="font-size: 12px; color: var(--sidebar-foreground); opacity: 0.4;">v1.0.0</span>
+          </div>
+
+        </aside>
+
+        <!-- ====== Right content area ====== -->
+        <div class="flex-1 flex flex-col min-w-0">
+
+          <!-- Topbar -->
+          <header class="sticky top-0 z-10 flex items-center justify-between h-16 px-8 shrink-0" style="background: color-mix(in srgb, var(--background) 86%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);">
+            <div class="flex items-center gap-2 truncate" style="font-size: 18px; font-weight: 600;">
+              <span class="truncate" style="color: var(--muted-foreground);">分析</span>
+              <span style="color: var(--muted-foreground); opacity: 0.4;">&gt;</span>
+              <span class="truncate" style="color: var(--foreground); text-wrap: balance; word-break: keep-all; overflow-wrap: break-word;">成长档案</span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <button class="flex items-center justify-center w-9 h-9 cursor-pointer opacity-60 hover:opacity-100 motion-reduce:transition-none transition-colors duration-150" style="border-radius: 8px; color: var(--foreground); border: none; background: transparent;" aria-label="切换主题" type="button">
+                <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              </button>
+              <button class="flex items-center justify-center w-9 h-9 cursor-pointer opacity-60 hover:opacity-100 motion-reduce:transition-none transition-colors duration-150 relative" style="border-radius: 8px; color: var(--foreground); border: none; background: transparent;" aria-label="通知" type="button">
+                <i data-lucide="bell" class="w-[18px] h-[18px]"></i>
+              </button>
+            </div>
+          </header>
+
+          <!-- Page content -->
+          <div class="flex-1 overflow-auto p-8">
+            <div class="w-full" style="max-width: 1180px;">
+
+              <!-- Page Header -->
+              <p class="mb-3" style="font: 500 11px/1.2 var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--brand-500);">分析</p>
+              <h1 class="mb-2" style="font: 400 38px/1.15 var(--font-display); letter-spacing: -0.01em; color: var(--card-foreground); text-wrap: balance; word-break: keep-all; overflow-wrap: break-word;">成长档案</h1>
+              <p class="mb-0" style="font: 400 16px/1.5 var(--font-serif); color: var(--muted-foreground);">生成和查看个人成长分析报告</p>
+
+              <!-- Report Type Selector -->
+              <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+
+                <!-- 综合成长报告 (ACTIVE) -->
+                <button type="button" data-dom-id="report-type-comprehensive" class="flex flex-col items-center text-center cursor-pointer p-5 motion-reduce:transition-none transition-colors duration-150" style="background: var(--brand-100); border: 2px solid var(--brand-500); border-radius: 12px;" onmouseover="this.style.filter='brightness(0.97)'" onmouseout="this.style.filter='none'">
+                  <div class="flex items-center justify-center w-10 h-10 mb-3" style="color: var(--brand-500);">
+                    <i data-lucide="file-bar-chart" class="w-10 h-10"></i>
+                  </div>
+                  <span class="block mb-1 truncate" style="font: 600 14px/1.2 var(--font-sans); color: var(--foreground);">综合成长报告</span>
+                  <span class="line-clamp-2" style="font: 400 12px/1.5 var(--font-serif); color: var(--muted-foreground);">全面评估各维度成长状况</span>
+                </button>
+
+                <!-- 学业分析报告 -->
+                <button type="button" data-dom-id="report-type-academic" class="flex flex-col items-center text-center cursor-pointer p-5 motion-reduce:transition-none transition-colors duration-150" style="background: var(--card); border: 1px solid var(--border); border-radius: 12px;" onmouseover="this.style.borderColor='var(--brand-300)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <div class="flex items-center justify-center w-10 h-10 mb-3" style="color: var(--text-400);">
+                    <i data-lucide="graduation-cap" class="w-10 h-10"></i>
+                  </div>
+                  <span class="block mb-1 truncate" style="font: 600 14px/1.2 var(--font-sans); color: var(--foreground);">学业分析报告</span>
+                  <span class="line-clamp-2" style="font: 400 12px/1.5 var(--font-serif); color: var(--muted-foreground);">学习成绩与学术能力分析</span>
+                </button>
+
+                <!-- 健康评估报告 -->
+                <button type="button" data-dom-id="report-type-health" class="flex flex-col items-center text-center cursor-pointer p-5 motion-reduce:transition-none transition-colors duration-150" style="background: var(--card); border: 1px solid var(--border); border-radius: 12px;" onmouseover="this.style.borderColor='var(--brand-300)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <div class="flex items-center justify-center w-10 h-10 mb-3" style="color: var(--text-400);">
+                    <i data-lucide="heart-pulse" class="w-10 h-10"></i>
+                  </div>
+                  <span class="block mb-1 truncate" style="font: 600 14px/1.2 var(--font-sans); color: var(--foreground);">健康评估报告</span>
+                  <span class="line-clamp-2" style="font: 400 12px/1.5 var(--font-serif); color: var(--muted-foreground);">身体与心理健康状况</span>
+                </button>
+
+                <!-- 社交分析报告 -->
+                <button type="button" data-dom-id="report-type-social" class="flex flex-col items-center text-center cursor-pointer p-5 motion-reduce:transition-none transition-colors duration-150" style="background: var(--card); border: 1px solid var(--border); border-radius: 12px;" onmouseover="this.style.borderColor='var(--brand-300)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <div class="flex items-center justify-center w-10 h-10 mb-3" style="color: var(--text-400);">
+                    <i data-lucide="users" class="w-10 h-10"></i>
+                  </div>
+                  <span class="block mb-1 truncate" style="font: 600 14px/1.2 var(--font-sans); color: var(--foreground);">社交分析报告</span>
+                  <span class="line-clamp-2" style="font: 400 12px/1.5 var(--font-serif); color: var(--muted-foreground);">社交活动与关系评估</span>
+                </button>
+
+              </div>
+
+              <!-- Report Content Area -->
+              <div class="flex flex-col lg:flex-row gap-6 mt-6">
+
+                <!-- Left: Report Panel -->
+                <div class="flex-1 min-w-0">
+                  <div class="p-6" style="background: var(--card); border: 1px solid var(--border); border-radius: 20px;">
+
+                    <!-- Panel header -->
+                    <div class="flex items-center justify-between mb-6 gap-4">
+                      <h2 class="m-0 truncate" style="font: 600 17px/1.2 var(--font-sans); color: var(--card-foreground);">综合成长报告</h2>
+                      <div class="flex items-center gap-3 shrink-0">
+                        <span class="whitespace-nowrap" style="font: 400 13px/1.3 var(--font-sans); color: var(--muted-foreground);">2024年1月</span>
+                        <button type="button" data-dom-id="export-pdf" class="flex items-center gap-2 px-4 cursor-pointer whitespace-nowrap motion-reduce:transition-none transition-colors duration-150" style="height: 36px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--foreground); font: 500 13px/1 var(--font-sans);" onmouseover="this.style.background='var(--muted)'" onmouseout="this.style.background='transparent'" onfocus="this.style.outline='2px solid var(--ring)';this.style.outlineOffset='2px'" onblur="this.style.outline='none'">
+                          <i data-lucide="download" class="w-4 h-4"></i>
+                          导出 PDF
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Section 1: 总体评价 -->
+                    <div class="mb-6">
+                      <h3 class="mb-3" style="font: 600 15px/1.3 var(--font-sans); color: var(--foreground);">总体评价</h3>
+                      <div class="p-4" style="background: var(--success-50); border-radius: 12px; border-left: 3px solid var(--success-500);">
+                        <p class="m-0" style="font: 400 14px/1.7 var(--font-serif); color: var(--text-700);">你的综合健康度为 82 分，处于良好水平。近一个月整体呈上升趋势，学术和社交维度表现优秀，建议关注心理健康维度的提升。</p>
+                      </div>
+                    </div>
+
+                    <!-- Section 2: 关键发现 -->
+                    <div class="mb-6">
+                      <h3 class="mb-3" style="font: 600 15px/1.3 var(--font-sans); color: var(--foreground);">关键发现</h3>
+                      <div class="flex flex-col gap-3">
+
+                        <!-- Finding 1: 学术稳步提升 -->
+                        <div class="flex gap-3 p-3" style="border-radius: 8px; border-left: 3px solid var(--success-500); background: var(--success-50);">
+                          <span class="shrink-0 flex items-center justify-center w-5 h-5">
+                            <i data-lucide="trending-up" class="w-5 h-5" style="color: var(--success-500);"></i>
+                          </span>
+                          <p class="m-0" style="font: 400 14px/1.6 var(--font-serif); color: var(--text-700);">学术健康稳步提升，高数成绩较上月提高 8%</p>
+                        </div>
+
+                        <!-- Finding 2: 心理健康需关注 -->
+                        <div class="flex gap-3 p-3" style="border-radius: 8px; border-left: 3px solid #d97706; background: var(--brand-50);">
+                          <span class="shrink-0 flex items-center justify-center w-5 h-5">
+                            <i data-lucide="alert-triangle" class="w-5 h-5" style="color: #d97706;"></i>
+                          </span>
+                          <p class="m-0" style="font: 400 14px/1.6 var(--font-serif); color: var(--text-700);">心理健康需关注，焦虑指数持续偏高</p>
+                        </div>
+
+                        <!-- Finding 3: 社交健康优异 -->
+                        <div class="flex gap-3 p-3" style="border-radius: 8px; border-left: 3px solid var(--success-500); background: var(--success-50);">
+                          <span class="shrink-0 flex items-center justify-center w-5 h-5">
+                            <i data-lucide="check-circle" class="w-5 h-5" style="color: var(--success-500);"></i>
+                          </span>
+                          <p class="m-0" style="font: 400 14px/1.6 var(--font-serif); color: var(--text-700);">社交健康表现优异，参与活动频率增加 30%</p>
+                        </div>
+
+                      </div>
+                    </div>
+
+                    <!-- Section 3: 改进建议 -->
+                    <div>
+                      <h3 class="mb-3" style="font: 600 15px/1.3 var(--font-sans); color: var(--foreground);">改进建议</h3>
+                      <div class="flex flex-col gap-3">
+
+                        <div class="flex gap-3 p-3" style="border-radius: 8px; background: var(--bg-50);">
+                          <span class="shrink-0 flex items-center justify-center w-6 h-6" style="font: 600 13px/1 var(--font-sans); color: var(--brand-500); background: var(--brand-100); border-radius: 6px;">1</span>
+                          <p class="m-0" style="font: 400 14px/1.6 var(--font-serif); color: var(--text-700);">每日安排 30 分钟放松时间，降低焦虑指数</p>
+                        </div>
+
+                        <div class="flex gap-3 p-3" style="border-radius: 8px; background: var(--bg-50);">
+                          <span class="shrink-0 flex items-center justify-center w-6 h-6" style="font: 600 13px/1 var(--font-sans); color: var(--brand-500); background: var(--brand-100); border-radius: 6px;">2</span>
+                          <p class="m-0" style="font: 400 14px/1.6 var(--font-serif); color: var(--text-700);">增加高数专题练习，重点攻克函数极限</p>
+                        </div>
+
+                        <div class="flex gap-3 p-3" style="border-radius: 8px; background: var(--bg-50);">
+                          <span class="shrink-0 flex items-center justify-center w-6 h-6" style="font: 600 13px/1 var(--font-sans); color: var(--brand-500); background: var(--brand-100); border-radius: 6px;">3</span>
+                          <p class="m-0" style="font: 400 14px/1.6 var(--font-serif); color: var(--text-700);">保持当前社交活动频率</p>
+                        </div>
+
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- Right: Quick Stats Sidebar -->
+                <div class="w-full lg:w-[320px] shrink-0">
+                  <h3 class="mb-4" style="font: 600 15px/1.3 var(--font-sans); color: var(--foreground);">报告概览</h3>
+                  <div class="flex flex-col gap-4 p-4" style="background: var(--card); border: 1px solid var(--border); border-radius: 12px;">
+
+                    <!-- Stat: 报告周期 -->
+                    <div class="flex items-center justify-between gap-3">
+                      <span class="whitespace-nowrap" style="font: 400 13px/1.3 var(--font-sans); color: var(--muted-foreground);">报告周期</span>
+                      <span class="whitespace-nowrap truncate" style="font: 500 13px/1.3 var(--font-sans); color: var(--foreground);">2024.01.01 - 01.31</span>
+                    </div>
+                    <div style="border-top: 1px solid var(--border);"></div>
+
+                    <!-- Stat: 数据完整度 -->
+                    <div class="flex items-center justify-between gap-3">
+                      <span class="whitespace-nowrap" style="font: 400 13px/1.3 var(--font-sans); color: var(--muted-foreground);">数据完整度</span>
+                      <span class="whitespace-nowrap" style="font: 500 13px/1.3 var(--font-sans); color: var(--success-600);">92%</span>
+                    </div>
+                    <div style="border-top: 1px solid var(--border);"></div>
+
+                    <!-- Stat: 告警次数 -->
+                    <div class="flex items-center justify-between gap-3">
+                      <span class="whitespace-nowrap" style="font: 400 13px/1.3 var(--font-sans); color: var(--muted-foreground);">告警次数</span>
+                      <span class="whitespace-nowrap" style="font: 500 13px/1.3 var(--font-sans); color: var(--error-500);">5</span>
+                    </div>
+                    <div style="border-top: 1px solid var(--border);"></div>
+
+                    <!-- Stat: 综合评分 -->
+                    <div class="flex items-center justify-between gap-3">
+                      <span class="whitespace-nowrap" style="font: 400 13px/1.3 var(--font-sans); color: var(--muted-foreground);">综合评分</span>
+                      <span class="whitespace-nowrap" style="font: 600 14px/1 var(--font-sans); color: var(--foreground); font-variant-numeric: tabular-nums;">82/100</span>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
