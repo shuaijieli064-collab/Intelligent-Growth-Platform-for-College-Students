@@ -138,8 +138,8 @@ def ensure_database() -> bool:
         conn.close()
 
         # 调用 init_database.py + generate_mock_data.py
-        init_script = PROJECT_DIR / "init_database.py"
-        mock_script = PROJECT_DIR / "generate_mock_data.py"
+        init_script = PROJECT_DIR / "scripts" / "init_database.py"
+        mock_script = PROJECT_DIR / "scripts" / "generate_mock_data.py"
 
         if init_script.exists():
             result = subprocess.run(

@@ -12,7 +12,6 @@ from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from web.routers.health import router as health_router
-from web.routers.test import router as test_router
 from web.routers.students import router as students_router
 from web.routers.courses import router as courses_router
 from web.routers.config import router as config_router
@@ -126,7 +125,6 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 
 app.include_router(health_router)
-app.include_router(test_router)
 app.include_router(students_router)
 app.include_router(courses_router)
 app.include_router(config_router)

@@ -2,6 +2,9 @@
 import random
 import sys
 from datetime import date, timedelta
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from config import DB_CONFIG
 from data_layer.database import DatabaseManager

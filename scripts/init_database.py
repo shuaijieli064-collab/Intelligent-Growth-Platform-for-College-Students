@@ -16,7 +16,8 @@ DB_CONFIG = {
     "charset": "utf8mb4",
 }
 
-SQL_DIR = Path(__file__).resolve().parent / "sql"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+SQL_DIR = PROJECT_ROOT / "sql"
 SQL_FILES = ["schema.sql", "v2_extend.sql", "v3_health_extend.sql"]
 
 

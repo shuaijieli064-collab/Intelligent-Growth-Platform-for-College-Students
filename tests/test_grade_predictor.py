@@ -4,12 +4,12 @@ sys.path.insert(0, ".")
 
 from config import DB_CONFIG
 from data_layer.database import DatabaseManager
-from business_layer.grade_predictor import GradePredictor
+from business_layer.grade_predictor_v2 import GradePredictorV2
 
 
 def test_train_and_predict() -> None:
     db = DatabaseManager.get_instance()
-    predictor = GradePredictor(db)
+    predictor = GradePredictorV2(db)
 
     X, y = predictor.load_training_data()
     print(f"  ✓ 加载训练数据: {len(X)} 条记录")
