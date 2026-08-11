@@ -10,9 +10,12 @@ class StudyPlanDAO:
 
     def create(self, student_id: int, subject: str, goal_score: float,
                exam_date: date, plan_content: list[dict]) -> int:
+        sql = ("INSERT INTO study_plan (student_id, subject, goal_score, exam_date, plan_content) "
+               "VALUES (%s, %s, %s, %s, %s)")
+        if self._db._db_type == "postgres":
+            sql += " RETURNING id"
         return self._db.execute_insert(
-            "INSERT INTO study_plan (student_id, subject, goal_score, exam_date, plan_content) "
-            "VALUES (%s, %s, %s, %s, %s)",
+            sql,
             (student_id, subject, goal_score, exam_date, json.dumps(plan_content, ensure_ascii=False)),
         )
 

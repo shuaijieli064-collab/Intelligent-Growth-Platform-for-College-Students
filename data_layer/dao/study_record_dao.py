@@ -12,9 +12,12 @@ class StudyRecordDAO:
                    study_hours: float, course_id: Optional[int] = None,
                    task_completed: int = 0, focus_score: Optional[int] = None,
                    notes: Optional[str] = None) -> int:
+        sql = ("INSERT INTO study_record (student_id, course_id, study_date, study_hours, "
+               "task_completed, focus_score, notes) VALUES (%s, %s, %s, %s, %s, %s, %s)")
+        if self._db._db_type == "postgres":
+            sql += " RETURNING record_id"
         return self._db.execute_insert(
-            "INSERT INTO study_record (student_id, course_id, study_date, study_hours, "
-            "task_completed, focus_score, notes) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            sql,
             (student_id, course_id, study_date, study_hours,
              task_completed, focus_score, notes),
         )
@@ -33,12 +36,15 @@ class StudyRecordDAO:
         )
 
     def get_weekly_hours(self, student_id: int) -> list[dict]:
-        return self._db.execute_query(
-            "SELECT YEARWEEK(study_date, 1) AS yw, SUM(study_hours) AS total_hours "
-            "FROM study_record WHERE student_id = %s "
-            "GROUP BY YEARWEEK(study_date, 1) ORDER BY yw",
-            (student_id,)
-        )
+        if self._db._db_type == "postgres":
+            sql = ("SELECT to_char(study_date, 'IYYYIW') AS yw, SUM(study_hours) AS total_hours "
+                   "FROM study_record WHERE student_id = %s "
+                   "GROUP BY to_char(study_date, 'IYYYIW') ORDER BY yw")
+        else:
+            sql = ("SELECT YEARWEEK(study_date, 1) AS yw, SUM(study_hours) AS total_hours "
+                   "FROM study_record WHERE student_id = %s "
+                   "GROUP BY YEARWEEK(study_date, 1) ORDER BY yw")
+        return self._db.execute_query(sql, (student_id,))
 
     def get_daily_focus_avg(self, student_id: int, days: int = 7) -> float:
         rows = self._db.execute_query(

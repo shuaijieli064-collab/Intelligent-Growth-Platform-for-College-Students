@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -18,8 +19,8 @@ from data_layer.models import User
 from config import DB_CONFIG
 
 
-# JWT 密钥
-SECRET_KEY = "student-growth-platform-secret-key-2024"
+# JWT 密钥（支持环境变量，生产环境务必通过环境变量设置）
+SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "student-growth-platform-secret-key-2024")
 ALGORITHM = "HS256"
 
 _db_manager: DatabaseManager | None = None
@@ -34,7 +35,8 @@ def get_db() -> DatabaseManager:
             user=DB_CONFIG["user"],
             password=DB_CONFIG["password"],
             database=DB_CONFIG["database"],
-            charset=DB_CONFIG["charset"],
+            charset=DB_CONFIG.get("charset", "utf8mb4"),
+            db_type=DB_CONFIG.get("db_type", "mysql"),
         )
     return _db_manager
 

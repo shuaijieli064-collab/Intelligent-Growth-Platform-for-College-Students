@@ -9,9 +9,12 @@ class RiskDAO:
         self._db = db
 
     def save_alert(self, alert: RiskAlert) -> int:
+        sql = ("INSERT INTO risk_alert (student_id, alert_type, risk_level, alert_message, "
+               "rule_triggered) VALUES (%s, %s, %s, %s, %s)")
+        if self._db._db_type == "postgres":
+            sql += " RETURNING alert_id"
         return self._db.execute_insert(
-            "INSERT INTO risk_alert (student_id, alert_type, risk_level, alert_message, "
-            "rule_triggered) VALUES (%s, %s, %s, %s, %s)",
+            sql,
             (alert.student_id, alert.alert_type, alert.risk_level,
              alert.alert_message, alert.rule_triggered),
         )

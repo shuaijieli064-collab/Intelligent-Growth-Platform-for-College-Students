@@ -25,9 +25,12 @@ class StudentDAO:
         return [Student(**r) for r in rows]
 
     def create(self, s: Student) -> int:
+        sql = ("INSERT INTO student (student_no, name, gender, grade_level, major, enrollment_year) "
+               "VALUES (%s, %s, %s, %s, %s, %s)")
+        if self._db._db_type == "postgres":
+            sql += " RETURNING student_id"
         return self._db.execute_insert(
-            "INSERT INTO student (student_no, name, gender, grade_level, major, enrollment_year) "
-            "VALUES (%s, %s, %s, %s, %s, %s)",
+            sql,
             (s.student_no, s.name, s.gender, s.grade_level, s.major, s.enrollment_year),
         )
 

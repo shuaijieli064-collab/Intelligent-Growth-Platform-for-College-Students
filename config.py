@@ -30,6 +30,7 @@ def _clarify(text: str) -> str:
 # 默认配置
 # ============================================================
 DEFAULT_DB_CONFIG = {
+    "db_type": "mysql",  # "mysql" 或 "postgres"
     "host": "localhost",
     "port": 3306,
     "user": "root",
@@ -126,10 +127,59 @@ def _merge_dict(default: dict[str, Any], override: dict[str, Any]) -> dict[str, 
     return merged
 
 
+def _load_env_overrides(db_config: dict[str, Any], llm_config: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+    """从环境变量读取配置覆盖（用于云部署，如 Render）.
+
+    支持的环境变量：
+      DB_TYPE, DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
+      LLM_PROVIDER, LLM_API_KEY, LLM_API_URL, LLM_MODEL
+      DATABASE_URL (Supabase/Render 自动注入的 Postgres 连接字符串)
+    """
+    # 优先解析 DATABASE_URL（云平台自动注入）
+    database_url = os.environ.get("DATABASE_URL")
+    if database_url:
+        # 格式: postgresql://user:password@host:port/dbname
+        from urllib.parse import urlparse
+        parsed = urlparse(database_url)
+        db_config["db_type"] = "postgres"
+        db_config["host"] = parsed.hostname or db_config["host"]
+        db_config["port"] = parsed.port or 5432
+        db_config["user"] = parsed.username or db_config["user"]
+        db_config["password"] = parsed.password or db_config["password"]
+        db_config["database"] = parsed.path.lstrip("/") or db_config["database"]
+
+    # 单独环境变量覆盖
+    if os.environ.get("DB_TYPE"):
+        db_config["db_type"] = os.environ["DB_TYPE"].lower()
+    if os.environ.get("DB_HOST"):
+        db_config["host"] = os.environ["DB_HOST"]
+    if os.environ.get("DB_PORT"):
+        db_config["port"] = int(os.environ["DB_PORT"])
+    if os.environ.get("DB_USER"):
+        db_config["user"] = os.environ["DB_USER"]
+    if os.environ.get("DB_PASSWORD"):
+        db_config["password"] = os.environ["DB_PASSWORD"]
+    if os.environ.get("DB_NAME"):
+        db_config["database"] = os.environ["DB_NAME"]
+
+    # LLM 环境变量
+    if os.environ.get("LLM_PROVIDER"):
+        llm_config["provider"] = os.environ["LLM_PROVIDER"]
+    if os.environ.get("LLM_API_KEY"):
+        llm_config["api_key"] = os.environ["LLM_API_KEY"]
+    if os.environ.get("LLM_API_URL"):
+        llm_config["api_url"] = os.environ["LLM_API_URL"]
+    if os.environ.get("LLM_MODEL"):
+        llm_config["model"] = os.environ["LLM_MODEL"]
+
+    return db_config, llm_config
+
+
 def load_runtime_config() -> tuple[dict[str, Any], dict[str, Any]]:
     db_config = deepcopy(DEFAULT_DB_CONFIG)
     llm_config = deepcopy(DEFAULT_LLM_CONFIG)
 
+    # 1. 从 config.json 加载（桌面版主要方式）
     for config_path in _candidate_config_paths():
         if not config_path.exists():
             continue
@@ -144,7 +194,10 @@ def load_runtime_config() -> tuple[dict[str, Any], dict[str, Any]]:
                 llm_config = _merge_dict(llm_config, llm_section)
         break
 
-    # Decode obscured API key
+    # 2. 环境变量覆盖（云部署主要方式，优先级最高）
+    db_config, llm_config = _load_env_overrides(db_config, llm_config)
+
+    # Decode obscured API key（仅当来自 config.json 的 base64 编码）
     if llm_config.get("api_key"):
         llm_config["api_key"] = _clarify(llm_config["api_key"])
 

@@ -13,10 +13,13 @@ class HealthDAO:
     # ── 健康评估 ──────────────────────────────────────────────
 
     def save_assessment(self, h: HealthAssessment) -> int:
+        sql = ("INSERT INTO health_assessment (student_id, assessment_date, academic_score, "
+               "physical_score, mental_score, social_score, overall_health, risk_level) "
+               "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)")
+        if self._db._db_type == "postgres":
+            sql += " RETURNING assessment_id"
         return self._db.execute_insert(
-            "INSERT INTO health_assessment (student_id, assessment_date, academic_score, "
-            "physical_score, mental_score, social_score, overall_health, risk_level) "
-            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+            sql,
             (h.student_id, h.assessment_date, h.academic_score, h.physical_score,
              h.mental_score, h.social_score, h.overall_health, h.risk_level),
         )
@@ -38,9 +41,12 @@ class HealthDAO:
     # ── 身体健康 ──────────────────────────────────────────────
 
     def save_physical_record(self, r: PhysicalHealthRecord) -> int:
+        sql = ("INSERT INTO physical_health_record (student_id, record_date, exercise_type, "
+               "exercise_duration, sleep_hours, steps) VALUES (%s, %s, %s, %s, %s, %s)")
+        if self._db._db_type == "postgres":
+            sql += " RETURNING id"
         return self._db.execute_insert(
-            "INSERT INTO physical_health_record (student_id, record_date, exercise_type, "
-            "exercise_duration, sleep_hours, steps) VALUES (%s, %s, %s, %s, %s, %s)",
+            sql,
             (r.student_id, r.record_date, r.exercise_type,
              r.exercise_duration, r.sleep_hours, r.steps),
         )
@@ -61,9 +67,12 @@ class HealthDAO:
     # ── 心理健康 ──────────────────────────────────────────────
 
     def save_mental_record(self, r: MentalHealthRecord) -> int:
+        sql = ("INSERT INTO mental_health_record (student_id, record_date, mood_score, "
+               "stress_level, anxiety_level, notes) VALUES (%s, %s, %s, %s, %s, %s)")
+        if self._db._db_type == "postgres":
+            sql += " RETURNING id"
         return self._db.execute_insert(
-            "INSERT INTO mental_health_record (student_id, record_date, mood_score, "
-            "stress_level, anxiety_level, notes) VALUES (%s, %s, %s, %s, %s, %s)",
+            sql,
             (r.student_id, r.record_date, r.mood_score,
              r.stress_level, r.anxiety_level, r.notes),
         )
@@ -84,9 +93,12 @@ class HealthDAO:
     # ── 社交健康 ──────────────────────────────────────────────
 
     def save_social_record(self, r: SocialHealthRecord) -> int:
+        sql = ("INSERT INTO social_health_record (student_id, record_date, activity_type, "
+               "duration_minutes, interaction_count) VALUES (%s, %s, %s, %s, %s)")
+        if self._db._db_type == "postgres":
+            sql += " RETURNING id"
         return self._db.execute_insert(
-            "INSERT INTO social_health_record (student_id, record_date, activity_type, "
-            "duration_minutes, interaction_count) VALUES (%s, %s, %s, %s, %s)",
+            sql,
             (r.student_id, r.record_date, r.activity_type,
              r.duration_minutes, r.interaction_count),
         )

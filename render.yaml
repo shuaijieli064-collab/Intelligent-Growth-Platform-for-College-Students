@@ -1,0 +1,37 @@
+# Render 部署配置
+# 文档：https://render.com/docs/blueprint-spec
+# 在 Render Dashboard 中创建 Blueprint 并连接 GitHub 仓库即可自动部署
+
+services:
+  - type: web
+    name: student-growth-platform-api
+    runtime: python
+    # Python 版本
+    pythonVersion: "3.12"
+    # 构建命令
+    buildCommand: pip install -r requirements-web.txt
+    # 启动命令
+    startCommand: uvicorn web.main:app --host 0.0.0.0 --port $PORT
+    # 健康检查
+    healthCheckPath: /api/health
+    healthCheckTimeout: 10
+    # 自动部署
+    autoDeploy: true
+    # 环境变量（在 Render Dashboard 中设置）
+    envVars:
+      - key: DATABASE_URL
+        sync: false  # 手动填入 Supabase 连接字符串
+      - key: DB_TYPE
+        value: postgres
+      - key: LLM_PROVIDER
+        sync: false
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_API_URL
+        sync: false
+      - key: LLM_MODEL
+        sync: false
+      - key: JWT_SECRET_KEY
+        sync: false
+    # 资源配置（免费层）
+    plan: free

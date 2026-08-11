@@ -13,10 +13,13 @@ class GrowthReportDAO:
                period_start: Optional[date], period_end: Optional[date], summary: str = "",
                detail: Optional[dict] = None, health_score: float = 0,
                risk_level: str = "LOW") -> int:
+        sql = ("INSERT INTO growth_report (student_id, report_type, report_date, "
+               "period_start, period_end, summary, detail, health_score, risk_level) "
+               "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)")
+        if self._db._db_type == "postgres":
+            sql += " RETURNING id"
         return self._db.execute_insert(
-            "INSERT INTO growth_report (student_id, report_type, report_date, "
-            "period_start, period_end, summary, detail, health_score, risk_level) "
-            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+            sql,
             (student_id, report_type, report_date, period_start, period_end,
              summary, json.dumps(detail or {}, ensure_ascii=False),
              health_score, risk_level),

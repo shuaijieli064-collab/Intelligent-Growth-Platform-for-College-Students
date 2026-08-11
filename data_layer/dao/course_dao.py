@@ -48,18 +48,24 @@ class CourseDAO:
         return result
 
     def create(self, c: Course) -> int:
+        sql = ("INSERT INTO course (course_code, course_name, credit, semester, is_compulsory, "
+               "prerequisite_course_id) VALUES (%s, %s, %s, %s, %s, %s)")
+        if self._db._db_type == "postgres":
+            sql += " RETURNING course_id"
         return self._db.execute_insert(
-            "INSERT INTO course (course_code, course_name, credit, semester, is_compulsory, "
-            "prerequisite_course_id) VALUES (%s, %s, %s, %s, %s, %s)",
+            sql,
             (c.course_code, c.course_name, c.credit, c.semester,
              c.is_compulsory, c.prerequisite_course_id),
         )
 
     def create_with_defaults(self, code: str, name: str, credit: float,
                              semester: str, is_compulsory: bool) -> int:
+        sql = ("INSERT INTO course (course_code, course_name, credit, semester, is_compulsory) "
+               "VALUES (%s, %s, %s, %s, %s)")
+        if self._db._db_type == "postgres":
+            sql += " RETURNING course_id"
         return self._db.execute_insert(
-            "INSERT INTO course (course_code, course_name, credit, semester, is_compulsory) "
-            "VALUES (%s, %s, %s, %s, %s)",
+            sql,
             (code, name, credit, semester, is_compulsory),
         )
 
@@ -74,8 +80,11 @@ class StudentCourseDAO:
         self._db = db
 
     def enroll(self, student_id: int, course_id: int) -> int:
+        sql = "INSERT INTO student_course (student_id, course_id) VALUES (%s, %s)"
+        if self._db._db_type == "postgres":
+            sql += " RETURNING id"
         return self._db.execute_insert(
-            "INSERT INTO student_course (student_id, course_id) VALUES (%s, %s)",
+            sql,
             (student_id, course_id),
         )
 

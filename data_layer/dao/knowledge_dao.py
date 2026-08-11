@@ -54,16 +54,22 @@ class KnowledgeDAO:
                 (mastery_level, date.today(), student_id, kp_id),
             ) > 0
         else:
+            sql = ("INSERT INTO knowledge_mastery (student_id, kp_id, mastery_level, last_assessed) "
+                   "VALUES (%s, %s, %s, %s)")
+            if self._db._db_type == "postgres":
+                sql += " RETURNING mastery_id"
             return self._db.execute_insert(
-                "INSERT INTO knowledge_mastery (student_id, kp_id, mastery_level, last_assessed) "
-                "VALUES (%s, %s, %s, %s)",
+                sql,
                 (student_id, kp_id, mastery_level, date.today()),
             ) > 0
 
     def create_knowledge_point(self, kp: KnowledgePoint) -> int:
+        sql = ("INSERT INTO knowledge_point (kp_name, course_id, parent_kp_id, difficulty, weight) "
+               "VALUES (%s, %s, %s, %s, %s)")
+        if self._db._db_type == "postgres":
+            sql += " RETURNING kp_id"
         return self._db.execute_insert(
-            "INSERT INTO knowledge_point (kp_name, course_id, parent_kp_id, difficulty, weight) "
-            "VALUES (%s, %s, %s, %s, %s)",
+            sql,
             (kp.kp_name, kp.course_id, kp.parent_kp_id, kp.difficulty, kp.weight),
         )
 

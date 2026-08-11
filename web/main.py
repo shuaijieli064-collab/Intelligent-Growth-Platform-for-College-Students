@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 import logging
@@ -39,18 +40,25 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="大学生智能成长平台 API")
 
+# CORS 允许的来源：本地开发 + 环境变量配置（Cloudflare Pages 域名）
+_cors_origins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:5175",
+    "http://localhost:5176",
+    "http://localhost:5177",
+    "http://localhost:5178",
+    "http://localhost:5179",
+    "http://localhost:5180",
+]
+# 通过环境变量添加生产环境域名（逗号分隔）
+_extra_origins = os.environ.get("CORS_ALLOW_ORIGINS", "")
+if _extra_origins:
+    _cors_origins.extend([o.strip() for o in _extra_origins.split(",") if o.strip()])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://localhost:5175",
-        "http://localhost:5176",
-        "http://localhost:5177",
-        "http://localhost:5178",
-        "http://localhost:5179",
-        "http://localhost:5180",
-    ],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

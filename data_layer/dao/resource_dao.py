@@ -10,9 +10,12 @@ class ResourceDAO:
 
     def create(self, student_id: int, kp_id: Optional[int], resource_type: str,
                title: str, url: str = "", reason: str = "") -> int:
+        sql = ("INSERT INTO resource_recommendation (student_id, kp_id, resource_type, "
+               "title, url, reason) VALUES (%s, %s, %s, %s, %s, %s)")
+        if self._db._db_type == "postgres":
+            sql += " RETURNING id"
         return self._db.execute_insert(
-            "INSERT INTO resource_recommendation (student_id, kp_id, resource_type, "
-            "title, url, reason) VALUES (%s, %s, %s, %s, %s, %s)",
+            sql,
             (student_id, kp_id, resource_type, title, url, reason),
         )
 

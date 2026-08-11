@@ -8,9 +8,12 @@ class CoachDAO:
 
     def save_message(self, student_id: int, session_id: str,
                      role: str, message: str, tokens_used: int = 0) -> int:
+        sql = ("INSERT INTO ai_coach_log (student_id, session_id, role, message, tokens_used) "
+               "VALUES (%s, %s, %s, %s, %s)")
+        if self._db._db_type == "postgres":
+            sql += " RETURNING log_id"
         return self._db.execute_insert(
-            "INSERT INTO ai_coach_log (student_id, session_id, role, message, tokens_used) "
-            "VALUES (%s, %s, %s, %s, %s)",
+            sql,
             (student_id, session_id, role, message, tokens_used),
         )
 
