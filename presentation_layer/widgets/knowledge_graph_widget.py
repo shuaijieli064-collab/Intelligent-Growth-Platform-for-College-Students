@@ -167,5 +167,22 @@ class KnowledgeGraphWidget(QWidget):
             self._graph_canvas.draw()
 
     def refresh(self) -> None:
+        # Rebuild course combo for the current student
+        current_cid = self._course_combo.currentData()
+        self._course_combo.blockSignals(True)
+        self._course_combo.clear()
+        for c in self._course_dao.get_by_student(self._student_id):
+            self._course_combo.addItem(c.course_name, c.course_id)
+        if current_cid:
+            idx = self._course_combo.findData(current_cid)
+            if idx >= 0:
+                self._course_combo.setCurrentIndex(idx)
+        self._course_combo.blockSignals(False)
+
+        # 先清空旧学生的图谱与结论，再按当前学生重绘
+        self._graph_canvas.fig.clear()
+        self._graph_canvas.draw()
+        self._weak_text.clear()
+        self._suggest_text.clear()
         if self._course_combo.count() > 0:
             self._draw_graph()

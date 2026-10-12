@@ -32,30 +32,30 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 transition-theme"
-      style={{ backgroundColor: '#FAF9F5' }}
-    >
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center px-4 transition-theme relative overflow-hidden bg-bg-surface">
+      <div
+        className="absolute inset-0 pointer-events-none"
+        aria-hidden="true"
+        style={{
+          background:
+            'radial-gradient(600px at 12% 8%, rgba(217,119,6,0.14), transparent 60%), radial-gradient(560px at 88% 90%, rgba(184,97,10,0.12), transparent 60%), radial-gradient(400px at 70% 20%, rgba(217,119,6,0.07), transparent 60%)',
+        }}
+      />
+      <div className="w-full max-w-md relative">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4 shadow-md"
-            style={{ background: 'linear-gradient(135deg, #D97757, #B85A3E)' }}
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-lg"
+            style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}
           >
-            <span className="text-white text-2xl font-bold">智</span>
+            <span className="text-white text-3xl font-bold">智</span>
           </div>
           <h1 className="text-2xl font-bold text-text-primary">欢迎回来</h1>
           <p className="text-text-muted mt-2 text-sm">登录你的智能成长平台账号</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-border-default p-8">
+        <div className="bg-bg-card rounded-2xl shadow-[0_20px_50px_-16px_rgba(16,24,40,0.18)] border border-border-default p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="px-4 py-3 rounded-lg text-sm"
-                style={{
-                  backgroundColor: '#FDF2F0',
-                  color: '#C53030',
-                  border: '1px solid #F4C4BE',
-                }}
-              >
+              <div className="px-4 py-3 rounded-lg text-sm bg-danger-light text-danger border border-danger/30">
                 {error}
               </div>
             )}
@@ -95,8 +95,7 @@ export default function LoginPage() {
             还没有账号？
             <Link
               to="/register"
-              className="font-medium ml-1 hover:underline"
-              style={{ color: '#D97757' }}
+              className="font-medium ml-1 hover:underline text-accent-text"
             >
               立即注册
             </Link>

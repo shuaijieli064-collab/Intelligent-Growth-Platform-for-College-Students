@@ -148,6 +148,8 @@ class ResourceWidget(QWidget):
             self.refresh()
 
     def refresh(self) -> None:
+        # Rebuild recommender so it is bound to the current student
+        self._recommender = ResourceRecommender(self._db, self._student_id)
         # Reload course list (student may have enrolled in new courses)
         current_cid = self._course_combo.currentData()
         self._course_combo.clear()

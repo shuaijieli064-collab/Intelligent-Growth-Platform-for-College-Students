@@ -1,4 +1,5 @@
 import { useTheme } from '@/hooks/useTheme'
+import { useAuthStore } from '@/store/authStore'
 
 interface HeaderProps {
   title?: string
@@ -7,6 +8,10 @@ interface HeaderProps {
 
 export function Header({ title, onMenuClick }: HeaderProps) {
   const { isDark, toggleTheme } = useTheme()
+  const user = useAuthStore((state) => state.user)
+
+  const displayName = user?.name || user?.username || '用户'
+  const avatarChar = displayName[0] || '?'
 
   return (
     <header className="h-16 bg-bg-surface/80 backdrop-blur-md border-b border-border-default flex items-center justify-between px-4 md:px-6 sticky top-0 z-10 transition-theme">
@@ -25,6 +30,9 @@ export function Header({ title, onMenuClick }: HeaderProps) {
         )}
       </div>
       <div className="flex items-center gap-2 md:gap-3">
+        <span className="text-xs text-text-muted hidden md:inline">
+          {new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' })}
+        </span>
         <button
           onClick={toggleTheme}
           className="p-2 rounded-lg hover:bg-bg-hover text-text-secondary hover:text-text-primary transition-all duration-200"
@@ -34,10 +42,10 @@ export function Header({ title, onMenuClick }: HeaderProps) {
         </button>
         <div className="w-px h-6 bg-border-default hidden sm:block" />
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-accent-light flex items-center justify-center text-accent-text font-semibold text-sm">
-            管
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-semibold text-sm">
+            {avatarChar}
           </div>
-          <span className="text-sm text-text-secondary hidden md:inline">管理员</span>
+          <span className="text-sm text-text-secondary hidden md:inline">{displayName}</span>
         </div>
       </div>
     </header>

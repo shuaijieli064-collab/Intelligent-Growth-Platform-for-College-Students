@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import ReactECharts from 'echarts-for-react'
+import { useTheme } from '@/hooks/useTheme'
+import { cssVarRgb } from '@/utils/cssVar'
 import {
   getReports,
   generateReport,
@@ -17,13 +19,28 @@ const reportTypeMap: Record<string, { label: string; icon: string }> = {
   semester: { label: '学期报告', icon: '📚' },
 }
 
+const riskLevelMap: Record<string, { label: string; variant: 'danger' | 'warning' | 'success' | 'default' }> = {
+  CRITICAL: { label: '严重', variant: 'danger' },
+  HIGH: { label: '高', variant: 'danger' },
+  MEDIUM: { label: '中', variant: 'warning' },
+  LOW: { label: '低', variant: 'success' },
+}
+
 export default function GrowthArchivePage() {
+  const { isDark } = useTheme()
   const [reports, setReports] = useState<GrowthReportListItem[]>([])
   const [selectedReport, setSelectedReport] = useState<GrowthReportDetail | null>(null)
   const [reportType, setReportType] = useState('weekly')
   const [generating, setGenerating] = useState(false)
   const [loadingReports, setLoadingReports] = useState(true)
   const [loadingDetail, setLoadingDetail] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  useEffect(() => {
+    if (!toast) return
+    const timer = setTimeout(() => setToast(null), 3000)
+    return () => clearTimeout(timer)
+  }, [toast])
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -63,8 +80,11 @@ export default function GrowthArchivePage() {
       setSelectedReport(result)
       const updated = await getReports()
       setReports(updated)
+      setToast({ message: '报告生成成功', type: 'success' })
     } catch (err) {
       console.error('Failed to generate report:', err)
+      const detail = (err as { message?: string })?.message
+      setToast({ message: detail || '生成报告失败，请稍后重试', type: 'error' })
     } finally {
       setGenerating(false)
     }
@@ -76,9 +96,9 @@ export default function GrowthArchivePage() {
     return {
       tooltip: {
         trigger: 'item',
-        backgroundColor: 'rgba(var(--bg-card-rgb), 0.95)',
-        borderColor: 'rgba(var(--border-default-rgb), 0.5)',
-        textStyle: { color: 'rgba(var(--text-primary-rgb), 1)' },
+        backgroundColor: cssVarRgb('--bg-card-rgb', 0.95),
+        borderColor: cssVarRgb('--border-default-rgb', 0.6),
+        textStyle: { color: cssVarRgb('--text-primary-rgb') },
       },
       radar: {
         indicator: [
@@ -87,18 +107,27 @@ export default function GrowthArchivePage() {
           { name: '心理', max: 100 },
           { name: '社交', max: 100 },
         ],
-        axisName: { color: 'rgba(var(--text-muted-rgb), 1)' },
-        splitLine: { lineStyle: { color: 'rgba(var(--border-default-rgb), 0.4)' } },
+        radius: '68%',
+        axisName: { color: cssVarRgb('--text-secondary-rgb'), fontSize: 13, fontWeight: 600 },
+        splitLine: { lineStyle: { color: cssVarRgb('--border-default-rgb', 0.55), width: 1 } },
         splitArea: {
           areaStyle: {
-            color: ['rgba(var(--bg-card-rgb), 1)', 'rgba(var(--bg-active-rgb), 0.3)'],
+            color: [
+              cssVarRgb('--accent-primary-rgb', 0.1),
+              cssVarRgb('--bg-active-rgb', 0.4),
+              cssVarRgb('--accent-primary-rgb', 0.06),
+              cssVarRgb('--bg-active-rgb', 0.25),
+            ],
           },
         },
-        axisLine: { lineStyle: { color: 'rgba(var(--border-default-rgb), 0.4)' } },
+        axisLine: { lineStyle: { color: cssVarRgb('--border-default-rgb', 0.55) } },
+        axisTick: { show: false },
       },
       series: [
         {
           type: 'radar',
+          symbol: 'circle',
+          symbolSize: 7,
           data: [
             {
               value: [
@@ -108,17 +137,58 @@ export default function GrowthArchivePage() {
                 selectedReport.social_score,
               ],
               name: '健康度',
-              lineStyle: { color: 'rgba(var(--accent-primary-rgb), 1)', width: 2 },
+              lineStyle: { color: cssVarRgb('--accent-primary-rgb'), width: 3 },
               areaStyle: {
-                color: 'rgba(var(--accent-primary-rgb), 0.3)',
+                color: cssVarRgb('--accent-primary-rgb', 0.35),
               },
-              itemStyle: { color: 'rgba(var(--accent-primary-rgb), 1)' },
+              itemStyle: { color: cssVarRgb('--accent-primary-rgb'), borderColor: cssVarRgb('--bg-card-rgb'), borderWidth: 2 },
             },
           ],
         },
       ],
     }
-  }, [selectedReport])
+  }, [selectedReport, isDark])
+
+  const trendOption = useMemo(() => {
+    if (!selectedReport || selectedReport.daily_study.length === 0) return null
+
+    const items = selectedReport.daily_study
+    return {
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: cssVarRgb('--bg-card-rgb', 0.95),
+        borderColor: cssVarRgb('--border-default-rgb', 0.6),
+        textStyle: { color: cssVarRgb('--text-primary-rgb') },
+      },
+      grid: { left: 40, right: 20, top: 30, bottom: 30 },
+      xAxis: {
+        type: 'category',
+        data: items.map(i => i.date.slice(5)),
+        axisLabel: { color: cssVarRgb('--text-secondary-rgb') },
+        axisLine: { lineStyle: { color: cssVarRgb('--border-default-rgb', 0.5) } },
+      },
+      yAxis: {
+        type: 'value',
+        name: '小时',
+        nameTextStyle: { color: cssVarRgb('--text-secondary-rgb') },
+        axisLabel: { color: cssVarRgb('--text-secondary-rgb') },
+        splitLine: { lineStyle: { color: cssVarRgb('--border-default-rgb', 0.3) } },
+      },
+      series: [
+        {
+          name: '学习时长',
+          type: 'line',
+          smooth: true,
+          data: items.map(i => i.hours),
+          lineStyle: { color: cssVarRgb('--accent-primary-rgb'), width: 2 },
+          itemStyle: { color: cssVarRgb('--accent-primary-rgb') },
+          areaStyle: { color: cssVarRgb('--accent-primary-rgb', 0.15) },
+          symbol: 'circle',
+          symbolSize: 6,
+        },
+      ],
+    }
+  }, [selectedReport, isDark])
 
   const stats = useMemo(() => {
     if (!selectedReport) return []
@@ -134,6 +204,14 @@ export default function GrowthArchivePage() {
 
   return (
     <div className="space-y-6">
+      {toast && (
+        <div className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-lg shadow-lg ${
+          toast.type === 'success' ? 'bg-success text-white' : 'bg-danger text-white'
+        }`}>
+          {toast.message}
+          <button type="button" className="ml-3 opacity-80 hover:opacity-100" onClick={() => setToast(null)}>×</button>
+        </div>
+      )}
       <div>
         <h1 className="text-2xl font-bold text-text-primary flex items-center gap-3">
           <span className="text-3xl">📊</span>
@@ -244,25 +322,30 @@ export default function GrowthArchivePage() {
                         {selectedReport.period_start} ~ {selectedReport.period_end}
                       </p>
                     </div>
-                    <Badge variant="accent">
-                      综合评分 {selectedReport.overall_score.toFixed(0)}
-                    </Badge>
+                    <div className="flex items-center gap-3">
+                      {selectedReport.avg_final_score != null && (
+                        <Badge variant="default">平均成绩 {selectedReport.avg_final_score.toFixed(1)}</Badge>
+                      )}
+                      <Badge variant="accent">
+                        综合评分 {selectedReport.overall_score.toFixed(0)}
+                      </Badge>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {stats.map((stat, idx) => (
-                    <Card key={idx}>
-                      <CardContent className="pt-6">
-                        <div className="text-2xl mb-2">{stat.icon}</div>
-                        <p className="text-text-muted text-sm">{stat.label}</p>
-                        <p className={`text-2xl font-bold mt-1 ${stat.color}`}>
-                          {stat.value}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))}
+                  <Card key={idx}>
+                    <CardContent className="pt-6">
+                      <div className="text-2xl mb-2">{stat.icon}</div>
+                      <p className="text-text-muted text-sm">{stat.label}</p>
+                      <p className={`text-2xl font-bold mt-1 ${stat.color}`}>
+                        {stat.value}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -274,7 +357,6 @@ export default function GrowthArchivePage() {
                     <ReactECharts
                       option={radarOption}
                       style={{ height: 280 }}
-                      theme="light"
                       notMerge={true}
                       lazyUpdate={true}
                     />
@@ -323,6 +405,127 @@ export default function GrowthArchivePage() {
                           <p className="text-text-muted text-sm">保持现状，你做得很好！</p>
                         )}
                       </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>📈 学习时长趋势</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {trendOption ? (
+                    <ReactECharts
+                      option={trendOption}
+                      style={{ height: 220 }}
+                      notMerge={true}
+                      lazyUpdate={true}
+                    />
+                  ) : (
+                    <div className="h-56 flex items-center justify-center text-text-muted">
+                      本期暂无学习趋势数据
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>📚 课程成绩概览</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {selectedReport.courses.length > 0 ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b border-border-default">
+                              <th className="text-left py-2 px-2 text-sm font-medium text-text-muted">课程</th>
+                              <th className="text-left py-2 px-2 text-sm font-medium text-text-muted">平时</th>
+                              <th className="text-left py-2 px-2 text-sm font-medium text-text-muted">期中</th>
+                              <th className="text-left py-2 px-2 text-sm font-medium text-text-muted">期末</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedReport.courses.slice(0, 8).map((c, i) => (
+                              <tr key={i} className="border-b border-border-default/50">
+                                <td className="py-2 px-2 text-sm text-text-primary">{c.course_name}</td>
+                                <td className="py-2 px-2 text-sm text-text-secondary">
+                                  {c.usual_score != null ? Number(c.usual_score).toFixed(1) : '-'}
+                                </td>
+                                <td className="py-2 px-2 text-sm text-text-secondary">
+                                  {c.midterm_score != null ? Number(c.midterm_score).toFixed(1) : '-'}
+                                </td>
+                                <td className="py-2 px-2 text-sm">
+                                  {c.final_score != null ? (
+                                    <span className={Number(c.final_score) >= 60 ? 'text-success' : 'text-danger'}>
+                                      {Number(c.final_score).toFixed(1)}
+                                    </span>
+                                  ) : '-'}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="text-center py-8 text-text-muted text-sm">
+                        暂无成绩数据，录入成绩后展示
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <span>🧠</span> 薄弱知识点
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {selectedReport.weak_points.length > 0 ? (
+                        <ul className="space-y-2">
+                          {selectedReport.weak_points.map((w, i) => (
+                            <li key={i} className="flex items-center justify-between p-2 rounded-lg bg-bg-hover/40 text-sm">
+                              <span className="text-text-primary">{w.kp_name}</span>
+                              <Badge variant="danger" size="sm">掌握度 {w.mastery}%</Badge>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-center py-6 text-text-muted text-sm">
+                          暂无薄弱知识点数据
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <span>⚠️</span> 风险告警
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {selectedReport.alerts.length > 0 ? (
+                        <ul className="space-y-2">
+                          {selectedReport.alerts.map((a, i) => {
+                            const level = riskLevelMap[a.level] || { label: a.level, variant: 'default' as const }
+                            return (
+                              <li key={i} className="flex items-start gap-2 p-2 rounded-lg bg-bg-hover/40 text-sm">
+                                <Badge variant={level.variant} size="sm">{level.label}</Badge>
+                                <span className="text-text-secondary">{a.message}</span>
+                              </li>
+                            )
+                          })}
+                        </ul>
+                      ) : (
+                        <p className="text-center py-6 text-text-muted text-sm">
+                          🎉 当前无风险告警
+                        </p>
+                      )}
                     </CardContent>
                   </Card>
                 </div>

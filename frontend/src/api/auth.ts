@@ -34,3 +34,10 @@ export const getMe = async (): Promise<UserInfo> => {
   const response = await apiClient.get<ApiResponse<UserInfo>>('/api/auth/me')
   return (response as unknown as ApiResponse<UserInfo>).data!
 }
+
+export const changePassword = async (oldPassword: string, newPassword: string): Promise<void> => {
+  await apiClient.put<ApiResponse<Record<string, never>>>('/api/auth/password', {
+    old_password: oldPassword,
+    new_password: newPassword,
+  })
+}

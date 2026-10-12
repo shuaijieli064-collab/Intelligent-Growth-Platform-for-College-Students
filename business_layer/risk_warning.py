@@ -111,8 +111,7 @@ class RiskWarningSystem:
         return alerts
 
     def save_alerts(self, alerts: list[RiskAlert]) -> None:
-        for alert in alerts:
-            self._risk_dao.save_alert(alert)
+        self._risk_dao.save_alerts(alerts)
 
     def evaluate_and_save(self, student_id: int) -> list[RiskAlert]:
         alerts = self.evaluate(student_id)

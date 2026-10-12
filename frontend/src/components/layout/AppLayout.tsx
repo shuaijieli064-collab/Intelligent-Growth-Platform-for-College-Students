@@ -16,6 +16,7 @@ const pageTitles: Record<string, string> = {
   '/focus-monitor': '专注度监测',
   '/growth-archive': '成长档案',
   '/visualization': '数据可视化',
+  '/settings': '设置',
 }
 
 export function AppLayout() {

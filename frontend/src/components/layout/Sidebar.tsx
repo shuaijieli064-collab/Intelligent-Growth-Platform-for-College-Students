@@ -46,7 +46,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   }
 
   const handleProfile = () => {
-    navigate('/data-entry')
+    navigate('/data-entry?tab=profile')
     onClose()
   }
 
@@ -178,7 +178,13 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     }
                   }}
                 >
-                  <span className="text-lg">{item.icon}</span>
+                  <span className={`w-7 h-7 rounded-md flex items-center justify-center text-sm flex-shrink-0 border transition-colors duration-200 ${
+                    isActive
+                      ? 'bg-bg-card border-accent-primary/40 shadow-sm'
+                      : 'bg-bg-card/70 border-border-default'
+                  }`}>
+                    {item.icon}
+                  </span>
                   <span>{item.label}</span>
                 </NavLink>
               )
@@ -189,10 +195,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div className="p-3 border-t border-border-default">
           <button
             onClick={toggleTheme}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-all duration-200"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-text-muted hover:bg-bg-hover hover:text-text-secondary transition-all duration-200"
           >
-            <span className="text-lg">{isDark ? '☀️' : '🌙'}</span>
+            <span>{isDark ? '☀️' : '🌙'}</span>
             <span>{isDark ? '浅色模式' : '深色模式'}</span>
+            <span className="ml-auto opacity-70">让成长可见</span>
           </button>
         </div>
       </aside>

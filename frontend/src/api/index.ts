@@ -41,7 +41,10 @@ apiClient.interceptors.response.use(
     return response.data
   },
   (error: AxiosError) => {
-    console.error('API Error:', error)
+    // 生产环境不打印完整 error 对象（其中包含 Authorization 头与请求体）
+    if (import.meta.env.DEV) {
+      console.error('API Error:', error.response?.status, error.message)
+    }
 
     let errorMessage = '请求失败，请稍后重试'
     let errorCode = -1
@@ -101,7 +104,7 @@ apiClient.interceptors.response.use(
     const apiError: ApiError = {
       code: errorCode,
       message: errorMessage,
-      details: error.message,
+      details: import.meta.env.DEV ? error.message : undefined,
     }
 
     return Promise.reject(apiError)

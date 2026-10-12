@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
 import { getLLMConfig, updateLLMConfig, type LLMConfig } from '@/api/settings'
+import { changePassword } from '@/api/auth'
+import type { ApiError } from '@/api'
 
 const providerDefaults: Record<string, { api_url: string; model: string }> = {
   deepseek: {
@@ -13,11 +15,15 @@ const providerDefaults: Record<string, { api_url: string; model: string }> = {
   },
   zhipu: {
     api_url: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
-    model: 'glm-4',
+    model: 'glm-4-flash',
   },
   qwen: {
     api_url: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
     model: 'qwen-turbo',
+  },
+  magic_tower: {
+    api_url: 'https://api-inference.modelscope.cn/v1/chat/completions',
+    model: 'deepseek-ai/DeepSeek-V4-Flash-0731',
   },
   custom: {
     api_url: '',
@@ -25,28 +31,14 @@ const providerDefaults: Record<string, { api_url: string; model: string }> = {
   },
 }
 
-function decodeBase64(s: string): string {
-  try {
-    return atob(s)
-  } catch {
-    return s
-  }
-}
-
-function encodeBase64(s: string): string {
-  try {
-    return btoa(s)
-  } catch {
-    return s
-  }
-}
-
 function AISettingsTab() {
   const [provider, setProvider] = useState('deepseek')
   const [apiUrl, setApiUrl] = useState('')
   const [apiKey, setApiKey] = useState('')
+  const [apiKeyMask, setApiKeyMask] = useState('')
   const [model, setModel] = useState('')
   const [showApiKey, setShowApiKey] = useState(false)
+  const [canWrite, setCanWrite] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
@@ -58,8 +50,11 @@ function AISettingsTab() {
         const config = await getLLMConfig()
         setProvider(config.provider || 'deepseek')
         setApiUrl(config.api_url || '')
-        setApiKey(decodeBase64(config.api_key || ''))
+        // 后端只返回脱敏掩码，不回传真实 Key；留空保存表示保持不变
+        setApiKeyMask(config.api_key || '')
+        setApiKey('')
         setModel(config.model || '')
+        setCanWrite(config.can_write !== false)
       } catch (err) {
         console.error('Failed to load LLM config:', err)
       } finally {
@@ -70,21 +65,24 @@ function AISettingsTab() {
   }, [])
 
   useEffect(() => {
-    if (provider !== 'custom') {
-      const defaults = providerDefaults[provider]
-      if (defaults) {
-        setApiUrl(defaults.api_url)
-        setModel(defaults.model)
-      }
-    }
-  }, [provider])
-
-  useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => setToast(null), 3000)
       return () => clearTimeout(timer)
     }
   }, [toast])
+
+  // 仅在用户手动切换提供商时填入预设，避免覆盖后端已保存的配置
+  const handleProviderChange = (value: string) => {
+    setProvider(value)
+    const defaults = providerDefaults[value]
+    if (defaults) {
+      setApiUrl(defaults.api_url)
+      setModel(defaults.model)
+    }
+    // 切换提供商后需重新填写 Key（旧 Key 属于上一个提供商）
+    setApiKey('')
+    setApiKeyMask('')
+  }
 
   const handleSave = async () => {
     setIsSaving(true)
@@ -92,14 +90,19 @@ function AISettingsTab() {
       const config: LLMConfig = {
         provider,
         api_url: apiUrl,
-        api_key: encodeBase64(apiKey),
+        // 明文传输；留空表示保持现有 Key（后端处理）
+        api_key: apiKey,
         model,
       }
       await updateLLMConfig(config)
       setToast({ type: 'success', message: '配置保存成功！' })
     } catch (err) {
       console.error('Failed to save LLM config:', err)
-      setToast({ type: 'error', message: '保存失败，请稍后重试' })
+      const apiErr = err as Partial<ApiError>
+      setToast({
+        type: 'error',
+        message: apiErr.code === 403 ? '需要管理员权限' : '保存失败，请稍后重试',
+      })
     } finally {
       setIsSaving(false)
     }
@@ -129,12 +132,13 @@ function AISettingsTab() {
           <Select
             label="AI 提供商"
             value={provider}
-            onChange={(e) => setProvider(e.target.value)}
-            disabled={isLoading}
+            onChange={(e) => handleProviderChange(e.target.value)}
+            disabled={isLoading || !canWrite}
           >
             <option value="deepseek">DeepSeek</option>
             <option value="zhipu">智谱AI</option>
             <option value="qwen">通义千问</option>
+            <option value="magic_tower">魔搭 ModelScope</option>
             <option value="custom">自定义</option>
           </Select>
         </div>
@@ -145,8 +149,8 @@ function AISettingsTab() {
             type={showApiKey ? 'text' : 'password'}
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
-            placeholder="请输入 API Key"
-            disabled={isLoading}
+            placeholder={apiKeyMask ? `已配置（${apiKeyMask}），留空保持不变` : '请输入 API Key'}
+            disabled={isLoading || !canWrite}
             rightIcon={
               <button
                 type="button"
@@ -176,7 +180,7 @@ function AISettingsTab() {
             value={apiUrl}
             onChange={(e) => setApiUrl(e.target.value)}
             placeholder="请输入 API URL"
-            disabled={isLoading || !isEditable}
+            disabled={isLoading || !isEditable || !canWrite}
             className={!isEditable ? 'opacity-70' : ''}
           />
         </div>
@@ -188,19 +192,116 @@ function AISettingsTab() {
             value={model}
             onChange={(e) => setModel(e.target.value)}
             placeholder="请输入模型名称"
-            disabled={isLoading || !isEditable}
+            disabled={isLoading || !isEditable || !canWrite}
             className={!isEditable ? 'opacity-70' : ''}
           />
         </div>
 
         <div className="pt-2">
+          {!canWrite && (
+            <p className="text-sm text-warning mb-2">
+              当前账号为只读权限，修改 AI 配置需要管理员账号
+            </p>
+          )}
           <Button
             variant="primary"
             onClick={handleSave}
             isLoading={isSaving}
-            disabled={isLoading}
+            disabled={isLoading || !canWrite}
           >
             保存配置
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function AccountSecurityTab() {
+  const [oldPassword, setOldPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [toast])
+
+  const handleSubmit = async () => {
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      setToast({ type: 'error', message: '请填写所有密码字段' })
+      return
+    }
+    if (newPassword.length < 6) {
+      setToast({ type: 'error', message: '新密码至少 6 位' })
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setToast({ type: 'error', message: '两次输入的新密码不一致' })
+      return
+    }
+    setIsSaving(true)
+    try {
+      await changePassword(oldPassword, newPassword)
+      setToast({ type: 'success', message: '密码修改成功' })
+      setOldPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+    } catch (err) {
+      console.error('Failed to change password:', err)
+      const detail = (err as { message?: string })?.message
+      setToast({ type: 'error', message: detail || '密码修改失败，请稍后重试' })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  return (
+    <div className="relative">
+      {toast && (
+        <div
+          className={`
+            fixed top-4 right-4 z-50 px-5 py-3 rounded-lg shadow-lg
+            transition-all duration-300 ease-out animate-slide-in-right
+            ${toast.type === 'success' ? 'bg-success text-white' : 'bg-danger text-white'}
+          `}
+        >
+          <div className="flex items-center gap-2">
+            <span>{toast.type === 'success' ? '✓' : '✕'}</span>
+            <span className="text-sm font-medium">{toast.message}</span>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-5 max-w-md">
+        <Input
+          label="当前密码"
+          type="password"
+          value={oldPassword}
+          onChange={(e) => setOldPassword(e.target.value)}
+          placeholder="请输入当前密码"
+        />
+        <Input
+          label="新密码"
+          type="password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          placeholder="至少 6 位"
+        />
+        <Input
+          label="确认新密码"
+          type="password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          placeholder="再次输入新密码"
+        />
+        <div className="pt-2">
+          <Button variant="primary" onClick={handleSubmit} isLoading={isSaving}>
+            修改密码
           </Button>
         </div>
       </div>
@@ -258,12 +359,15 @@ export default function SettingsPage() {
       <Card>
         <CardHeader className="pb-0">
           <CardTitle className="text-lg">系统设置</CardTitle>
-          <CardDescription>配置 AI 模型参数和查看平台信息</CardDescription>
+          <CardDescription>配置 AI 模型参数、账号安全和平台信息</CardDescription>
         </CardHeader>
         <CardContent className="pt-5">
           <Tabs defaultValue="ai">
             <Tab value="ai" label="AI 配置">
               <AISettingsTab />
+            </Tab>
+            <Tab value="account" label="账号安全">
+              <AccountSecurityTab />
             </Tab>
             <Tab value="about" label="关于">
               <AboutTab />

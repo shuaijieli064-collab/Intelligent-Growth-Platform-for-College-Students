@@ -27,6 +27,11 @@ def get_resources(
     if not course:
         raise HTTPException(status_code=404, detail="课程不存在")
 
+    # 归属校验：仅已选修该课程的学生可读取推荐资源
+    enrolled = {c.course_id for c in course_dao.get_by_student(student_id)}
+    if course_id not in enrolled:
+        raise HTTPException(status_code=403, detail="无权访问该课程")
+
     recommender = ResourceRecommender(db, student_id)
     resources = recommender.recommend(course_id, course.course_name, 8)
 
@@ -35,12 +40,15 @@ def get_resources(
             ResourceItem(
                 id=r.get("id"),
                 student_id=student_id,
+                kp_id=r.get("kp_id"),
                 kp_name=r.get("kp_name"),
+                course_id=r.get("course_id") or course_id,
+                course_name=course.course_name,
                 resource_type=r.get("type", ""),
                 title=r.get("title", ""),
                 url=r.get("url", ""),
                 reason=r.get("reason", ""),
-                is_completed=False,
+                is_completed=bool(r.get("is_completed")),
             )
             for r in resources
         ]
@@ -50,11 +58,15 @@ def get_resources(
 @router.put("/{resource_id}/complete", response_model=ApiResponse[dict])
 def complete_resource(
     resource_id: int,
+    student_id: int = Depends(get_current_student_id),
     db: DatabaseManager = Depends(get_db),
 ):
     from data_layer.dao.resource_dao import ResourceDAO
     dao = ResourceDAO(db)
-    success = dao.mark_completed(resource_id)
-    if not success:
+    item = dao.get_by_id(resource_id)
+    if not item:
         raise HTTPException(status_code=404, detail="资源不存在")
+    if item.get("student_id") != student_id:
+        raise HTTPException(status_code=403, detail="无权操作该资源")
+    dao.mark_completed(resource_id)
     return ApiResponse(data={"resource_id": resource_id}, message="标记完成成功")

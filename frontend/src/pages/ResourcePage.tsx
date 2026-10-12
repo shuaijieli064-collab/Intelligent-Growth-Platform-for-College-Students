@@ -5,6 +5,7 @@ import { Select } from '@/components/ui/Select'
 import { Badge } from '@/components/ui/Badge'
 import { getCoursesWithScores, type CourseWithScores } from '@/api/gradePredict'
 import { getResources, completeResource, type ResourceItem } from '@/api/resource'
+import { isSafeUrl } from '@/utils/safe'
 
 const resourceTypeMap: Record<string, { label: string; icon: string; color: string }> = {
   video: { label: '视频', icon: '🎬', color: 'bg-red-500/10 text-red-500' },
@@ -19,6 +20,13 @@ export default function ResourcePage() {
   const [resources, setResources] = useState<ResourceItem[]>([])
   const [loading, setLoading] = useState(false)
   const [completingId, setCompletingId] = useState<number | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  useEffect(() => {
+    if (!toast) return
+    const timer = setTimeout(() => setToast(null), 3000)
+    return () => clearTimeout(timer)
+  }, [toast])
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -30,6 +38,8 @@ export default function ResourcePage() {
         }
       } catch (err) {
         console.error('Failed to fetch courses:', err)
+        const detail = (err as { message?: string })?.message
+        setToast({ message: detail || '加载课程失败', type: 'error' })
       }
     }
 
@@ -46,6 +56,9 @@ export default function ResourcePage() {
         setResources(result)
       } catch (err) {
         console.error('Failed to fetch resources:', err)
+        const detail = (err as { message?: string })?.message
+        setToast({ message: detail || '加载资源失败', type: 'error' })
+        setResources([])
       } finally {
         setLoading(false)
       }
@@ -63,6 +76,8 @@ export default function ResourcePage() {
       ))
     } catch (err) {
       console.error('Failed to complete resource:', err)
+      const detail = (err as { message?: string })?.message
+      setToast({ message: detail || '操作失败，请稍后重试', type: 'error' })
     } finally {
       setCompletingId(null)
     }
@@ -70,6 +85,14 @@ export default function ResourcePage() {
 
   return (
     <div className="space-y-6">
+      {toast && (
+        <div className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-lg shadow-lg ${
+          toast.type === 'success' ? 'bg-success text-white' : 'bg-danger text-white'
+        }`}>
+          {toast.message}
+          <button type="button" className="ml-3 opacity-80 hover:opacity-100" onClick={() => setToast(null)}>×</button>
+        </div>
+      )}
       <div>
         <h1 className="text-2xl font-bold text-text-primary flex items-center gap-3">
           <span className="text-3xl">📚</span>
@@ -157,27 +180,40 @@ export default function ResourcePage() {
                       {resource.title}
                     </h4>
 
-                    {resource.kp_name && (
-                      <p className="text-xs text-text-muted mb-2">
-                        知识点: {resource.kp_name}
-                      </p>
-                    )}
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      {resource.course_name && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-accent-primary/10 text-accent-primary">
+                          📚 {resource.course_name}
+                        </span>
+                      )}
+                      {resource.kp_name && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-bg-hover text-text-secondary">
+                          🧠 {resource.kp_name}
+                        </span>
+                      )}
+                    </div>
 
                     <p className="text-sm text-text-secondary mb-4 line-clamp-2">
                       {resource.reason}
                     </p>
 
                     <div className="flex gap-2">
-                      <a
-                        href={resource.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1"
-                      >
-                        <Button variant="secondary" size="sm" className="w-full">
-                          打开链接
+                      {isSafeUrl(resource.url) ? (
+                        <a
+                          href={resource.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1"
+                        >
+                          <Button variant="secondary" size="sm" className="w-full">
+                            打开链接
+                          </Button>
+                        </a>
+                      ) : (
+                        <Button variant="secondary" size="sm" className="flex-1" disabled>
+                          暂无链接
                         </Button>
-                      </a>
+                      )}
                       {!resource.is_completed && (
                         <Button
                           variant="success"

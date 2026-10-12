@@ -156,11 +156,11 @@ class DashboardWidget(QWidget):
             self._alert_list.addItem("暂无风险告警，继续保持！")
 
     def refresh(self) -> None:
+        # Rebuild digital twin for the current student
+        self._twin = DigitalTwin(self._student_id, self._db)
         # Auto-save a health assessment so health trend chart has data
         try:
-            from business_layer.digital_twin import DigitalTwin
-            dt = DigitalTwin(self._student_id, self._db)
-            dt.save_assessment()
+            self._twin.save_assessment()
         except Exception:
             pass
         self._load_data()

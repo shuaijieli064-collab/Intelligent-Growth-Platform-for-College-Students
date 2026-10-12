@@ -32,6 +32,7 @@ CREATE TABLE course (
     semester              VARCHAR(20)  NOT NULL COMMENT '学期，如2025-春',
     is_compulsory         BOOLEAN      DEFAULT TRUE COMMENT '是否必修',
     prerequisite_course_id INT         DEFAULT NULL COMMENT '先修课程ID',
+    created_by             INT         DEFAULT NULL COMMENT '创建者学生ID(NULL=系统预置)',
     FOREIGN KEY (prerequisite_course_id) REFERENCES course(course_id)
         ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB COMMENT='课程表';
@@ -99,6 +100,8 @@ CREATE TABLE knowledge_point (
     parent_kp_id INT DEFAULT NULL COMMENT '前置知识点',
     difficulty   TINYINT DEFAULT 1 COMMENT '难度(1-5)',
     weight       DECIMAL(3,2) DEFAULT 1.0 COMMENT '重要性权重',
+    created_by   INT DEFAULT NULL COMMENT '创建者学生ID(NULL=系统预置)',
+    node_type    ENUM('course','chapter','kp') NOT NULL DEFAULT 'kp' COMMENT '节点类型: course/chapter/kp',
     FOREIGN KEY (course_id)   REFERENCES course(course_id)
         ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (parent_kp_id) REFERENCES knowledge_point(kp_id)

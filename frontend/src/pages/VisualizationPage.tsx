@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, Tab } from '@/components/ui/Tabs'
 import ReactECharts from 'echarts-for-react'
 import { useEchartsTheme } from '@/hooks/useEchartsTheme'
+import { escapeHtml } from '@/utils/safe'
 import {
   getStudyCurve,
   getHealthTrend,
@@ -118,7 +119,9 @@ export default function VisualizationPage() {
   const healthTrendOption = useMemo(() => {
     if (!healthTrend?.data?.length) return {}
 
-    const dates = healthTrend.data.map(d => d.date.slice(5))
+    // 接口按日期倒序返回，反转为时间正序
+    const rows = [...healthTrend.data].reverse()
+    const dates = rows.map(d => d.date.slice(5))
 
     return mergeOption({
       tooltip: {
@@ -143,7 +146,7 @@ export default function VisualizationPage() {
           name: '综合',
           type: 'line',
           smooth: true,
-          data: healthTrend.data.map(d => d.overall),
+          data: rows.map(d => d.overall),
           lineStyle: { color: colors.primary, width: 3 },
           itemStyle: { color: colors.primary },
           symbol: 'circle',
@@ -153,7 +156,7 @@ export default function VisualizationPage() {
           name: '学业',
           type: 'line',
           smooth: true,
-          data: healthTrend.data.map(d => d.academic),
+          data: rows.map(d => d.academic),
           lineStyle: { color: colors.success, width: 2 },
           itemStyle: { color: colors.success },
           symbol: 'circle',
@@ -163,7 +166,7 @@ export default function VisualizationPage() {
           name: '身体',
           type: 'line',
           smooth: true,
-          data: healthTrend.data.map(d => d.physical),
+          data: rows.map(d => d.physical),
           lineStyle: { color: colors.warning, width: 2 },
           itemStyle: { color: colors.warning },
           symbol: 'circle',
@@ -173,7 +176,7 @@ export default function VisualizationPage() {
           name: '心理',
           type: 'line',
           smooth: true,
-          data: healthTrend.data.map(d => d.mental),
+          data: rows.map(d => d.mental),
           lineStyle: { color: colors.purple, width: 2 },
           itemStyle: { color: colors.purple },
           symbol: 'circle',
@@ -183,7 +186,7 @@ export default function VisualizationPage() {
           name: '社交',
           type: 'line',
           smooth: true,
-          data: healthTrend.data.map(d => d.social),
+          data: rows.map(d => d.social),
           lineStyle: { color: colors.danger, width: 2 },
           itemStyle: { color: colors.danger },
           symbol: 'circle',
@@ -244,7 +247,7 @@ export default function VisualizationPage() {
           const course = knowledgeHeatmap.courses[params.data[1]]
           const kp = knowledgeHeatmap.kps[params.data[0]]
           const value = params.data[2]
-          return `${course}<br/>${kp}<br/>掌握度: ${value.toFixed(0)}%`
+          return `${escapeHtml(course)}<br/>${escapeHtml(kp)}<br/>掌握度: ${Number(value).toFixed(0)}%`
         },
       },
       grid: { left: 100, right: 40, top: 20, bottom: 80 },
@@ -339,12 +342,21 @@ export default function VisualizationPage() {
                     <CardDescription>四维度健康度历史变化趋势</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <ReactECharts
-                      option={healthTrendOption}
-                      style={{ height: 400 }}
-                      notMerge={true}
-                      lazyUpdate={true}
-                    />
+                    {healthTrend?.data?.length ? (
+                      <ReactECharts
+                        option={healthTrendOption}
+                        style={{ height: 400 }}
+                        notMerge={true}
+                        lazyUpdate={true}
+                      />
+                    ) : (
+                      <div className="h-80 flex items-center justify-center text-text-muted">
+                        <div className="text-center">
+                          <span className="text-4xl mb-2 block">📈</span>
+                          <p>暂无健康趋势数据，完善健康打卡后自动生成</p>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </Tab>
@@ -356,12 +368,21 @@ export default function VisualizationPage() {
                     <CardDescription>各课程成绩对比分析</CardDescription>
                   </CardHeader>
                   <CardContent className="flex justify-center">
-                    <ReactECharts
-                      option={gradeRadarOption}
-                      style={{ height: 400, width: '100%', maxWidth: 600 }}
-                      notMerge={true}
-                      lazyUpdate={true}
-                    />
+                    {gradeRadar?.courses?.length ? (
+                      <ReactECharts
+                        option={gradeRadarOption}
+                        style={{ height: 400, width: '100%', maxWidth: 600 }}
+                        notMerge={true}
+                        lazyUpdate={true}
+                      />
+                    ) : (
+                      <div className="h-80 flex items-center justify-center text-text-muted">
+                        <div className="text-center">
+                          <span className="text-4xl mb-2 block">🎯</span>
+                          <p>暂无成绩数据，录入成绩后自动生成</p>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </Tab>

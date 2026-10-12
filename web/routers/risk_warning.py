@@ -40,23 +40,13 @@ def get_alerts(
 @router.put("/{alert_id}/resolve", response_model=ApiResponse[dict])
 def resolve_alert(
     alert_id: int,
+    student_id: int = Depends(get_current_student_id),
     dao: RiskDAO = Depends(get_risk_dao),
 ):
-    success = dao.resolve(alert_id)
+    success = dao.resolve(alert_id, student_id)
     if not success:
-        raise HTTPException(status_code=404, detail="告警不存在")
+        raise HTTPException(status_code=404, detail="告警不存在或无权访问")
     return ApiResponse(data={"alert_id": alert_id}, message="标记已处理成功")
-
-
-@router.delete("/{alert_id}", response_model=ApiResponse[dict])
-def delete_alert(
-    alert_id: int,
-    dao: RiskDAO = Depends(get_risk_dao),
-):
-    success = dao.delete(alert_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="告警不存在")
-    return ApiResponse(data={"alert_id": alert_id}, message="删除成功")
 
 
 @router.delete("/batch", response_model=ApiResponse[dict])
@@ -67,9 +57,21 @@ def batch_delete_alerts(
 ):
     deleted = 0
     for alert_id in req.alert_ids:
-        if dao.delete(alert_id):
+        if dao.delete(alert_id, student_id):
             deleted += 1
     return ApiResponse(
         data={"deleted_count": deleted},
         message=f"成功删除 {deleted} 条告警",
     )
+
+
+@router.delete("/{alert_id}", response_model=ApiResponse[dict])
+def delete_alert(
+    alert_id: int,
+    student_id: int = Depends(get_current_student_id),
+    dao: RiskDAO = Depends(get_risk_dao),
+):
+    success = dao.delete(alert_id, student_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="告警不存在或无权访问")
+    return ApiResponse(data={"alert_id": alert_id}, message="删除成功")

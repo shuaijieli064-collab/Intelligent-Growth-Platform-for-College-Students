@@ -33,7 +33,8 @@ def _resource_path(relative: str) -> str:
     return str(Path(__file__).resolve().parent.parent / relative)
 
 
-SQL_FILES = ["schema.sql", "v2_extend.sql", "v3_health_extend.sql"]
+SQL_FILES = ["schema.sql", "v2_extend.sql", "v3_health_extend.sql", "v4_auth_resource.sql", "v5_ownership.sql", "v6_node_type.sql"]
+
 
 
 class SetupDialog(QDialog):
@@ -301,34 +302,27 @@ class SetupDialog(QDialog):
 
     @staticmethod
     def _seed_courses(db):
-        courses = [
-            ("CS101", "程序设计基础", 4.0, "2025-春", True, None),
-            ("CS102", "数据结构与算法", 4.0, "2025-春", True, None),
-            ("CS201", "面向对象程序设计", 3.0, "2025-春", True, None),
-            ("CS202", "数据库原理", 3.0, "2025-春", True, None),
-            ("CS301", "人工智能导论", 3.0, "2025-春", False, None),
-            ("MATH101", "高等数学(上)", 5.0, "2025-春", True, None),
-            ("MATH102", "线性代数", 3.0, "2025-春", True, None),
-            ("ENG101", "大学英语(4)", 2.0, "2025-春", True, None),
-        ]
-        prereq_map = {
-            "CS102": "CS101",
-            "CS201": "CS101",
-            "CS301": "MATH101",
-        }
+        """与 web 端 PRESET_COURSES 对齐，保证名称命中同一份知识树."""
+        from business_layer.seed_data import PRESET_COURSES
+        demo_codes = ["CS101", "CS102", "CS201", "CS301", "CS302", "MATH101", "MATH201", "ENG101"]
+        code_to_data = {c["course_code"]: c for c in PRESET_COURSES}
         ids = {}
-        for code, name, credit, sem, comp, _ in courses:
+        for code in demo_codes:
+            data = code_to_data[code]
             cid = db.execute_insert(
                 "INSERT INTO course (course_code, course_name, credit, semester, is_compulsory, "
                 "prerequisite_course_id) VALUES (%s, %s, %s, %s, %s, NULL)",
-                (code, name, credit, sem, comp),
+                (code, data["course_name"], data["credit"], data["semester"],
+                 data["is_compulsory"]),
             )
             ids[code] = cid
-        for code, prereq_code in prereq_map.items():
-            db.execute_update(
-                "UPDATE course SET prerequisite_course_id=%s WHERE course_id=%s",
-                (ids[prereq_code], ids[code]),
-            )
+        for code in demo_codes:
+            prereq = code_to_data[code]["prerequisite_code"]
+            if prereq and prereq in ids:
+                db.execute_update(
+                    "UPDATE course SET prerequisite_course_id=%s WHERE course_id=%s",
+                    (ids[prereq], ids[code]),
+                )
         return list(ids.values())
 
     @staticmethod
@@ -367,20 +361,20 @@ class SetupDialog(QDialog):
 
     @staticmethod
     def _seed_knowledge_points(db, course_ids):
+        """按 PRESET_COURSE_TREE 生成三层知识结构，返回 {course_id: 叶子kp_id列表}."""
+        from business_layer.seed_data import COURSE_NAME_TO_CODE, ensure_course_hierarchy
         result = {}
-        for idx, cid in enumerate(course_ids):
-            kp_ids = []
-            for i in range(6):
-                name = f"第{i+1}章-知识点"
-                parent_id = kp_ids[-1] if kp_ids and i > 0 else None
-                difficulty = min(5, max(1, i))
-                kp_id = db.execute_insert(
-                    "INSERT INTO knowledge_point (kp_name, course_id, parent_kp_id, "
-                    "difficulty, weight) VALUES (%s, %s, %s, %s, %s)",
-                    (name, cid, parent_id, difficulty, round(random.uniform(0.8, 1.2), 2)),
-                )
-                kp_ids.append(kp_id)
-            result[cid] = kp_ids
+        for cid in course_ids:
+            rows = db.execute_query(
+                "SELECT course_name FROM course WHERE course_id = %s", (cid,))
+            course_name = rows[0]["course_name"] if rows else ""
+            code = COURSE_NAME_TO_CODE.get(course_name)
+            if code:
+                ensure_course_hierarchy(db, cid, code, course_name)
+            leaves = db.execute_query(
+                "SELECT kp_id FROM knowledge_point WHERE course_id = %s "
+                "AND node_type = 'kp' ORDER BY kp_id", (cid,))
+            result[cid] = [r["kp_id"] for r in leaves]
         return result
 
     @staticmethod

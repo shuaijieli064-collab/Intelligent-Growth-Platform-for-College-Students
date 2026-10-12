@@ -260,6 +260,8 @@ class StudyPlanWidget(QWidget):
             self.refresh()
 
     def refresh(self) -> None:
+        # 重建业务对象，避免切换学生后仍读写旧学生的计划
+        self._generator = StudyPlanGenerator(self._db, self._student_id)
         # Reload course combo
         current_cid = self._course_combo.currentData()
         self._course_combo.clear()
@@ -271,6 +273,7 @@ class StudyPlanWidget(QWidget):
                 self._course_combo.setCurrentIndex(idx)
         # Reload plan list
         self._plan_list.clear()
+        self._detail_view.clear()
         plans = self._generator.get_plans()
         for p in plans:
             status = p.get("status", "")

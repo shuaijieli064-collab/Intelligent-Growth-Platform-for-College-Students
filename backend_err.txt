@@ -1,0 +1,9 @@
+INFO:     Started server process [43136]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+2026-10-09 22:13:16,254 - web.main - INFO - GET /api/health - Status: 200 - Duration: 1.01ms
+2026-10-09 22:23:18,859 - web.main - INFO - POST /api/auth/login - Status: 200 - Duration: 348.79ms
+2026-10-09 22:23:18,942 - web.main - WARNING - HTTP Exception 401: 未提供认证信息 - GET /api/students
+2026-10-09 22:23:18,944 - web.main - INFO - GET /api/students - Status: 401 - Duration: 4.11ms
+2026-10-09 22:23:22,247 - web.main - INFO - GET /api/health - Status: 200 - Duration: 1.60ms

@@ -6,6 +6,8 @@ export interface ResourceItem {
   student_id?: number
   kp_id?: number
   kp_name?: string
+  course_id?: number
+  course_name?: string
   resource_type: string
   title: string
   url: string

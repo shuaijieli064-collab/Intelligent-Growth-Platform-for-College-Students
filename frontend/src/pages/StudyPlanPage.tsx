@@ -16,9 +16,11 @@ import {
 } from '@/api/studyPlan'
 
 const taskTypeMap: Record<string, { label: string; icon: string; color: string }> = {
-  review: { label: '复习', icon: '📖', color: 'bg-accent-light text-accent-text' },
-  practice: { label: '练习', icon: '✏️', color: 'bg-warning/10 text-warning' },
+  review: { label: '基础学习', icon: '📖', color: 'bg-accent-light text-accent-text' },
+  practice: { label: '专项练习', icon: '✏️', color: 'bg-warning/10 text-warning' },
   mock_exam: { label: '模拟考试', icon: '📝', color: 'bg-danger/10 text-danger' },
+  summarize: { label: '总结归纳', icon: '🗂️', color: 'bg-blue-500/10 text-blue-500' },
+  memorize: { label: '背诵记忆', icon: '🧠', color: 'bg-purple-500/10 text-purple-500' },
 }
 
 const priorityMap: Record<string, { label: string; variant: 'success' | 'warning' | 'danger' }> = {
@@ -27,15 +29,28 @@ const priorityMap: Record<string, { label: string; variant: 'success' | 'warning
   low: { label: '低', variant: 'success' },
 }
 
+function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
+  return (
+    <div className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-lg shadow-lg ${
+      type === 'success' ? 'bg-success text-white' : 'bg-danger text-white'
+    }`}>
+      {message}
+      <button type="button" className="ml-3 opacity-80 hover:opacity-100" onClick={onClose}>×</button>
+    </div>
+  )
+}
+
 export default function StudyPlanPage() {
   const [courses, setCourses] = useState<CourseWithScores[]>([])
   const [plan, setPlan] = useState<StudyPlan | null>(null)
   const [selectedCourse, setSelectedCourse] = useState<number | null>(null)
   const [goalScore, setGoalScore] = useState<string>('85')
+  const [dailyMinutes, setDailyMinutes] = useState<string>('90')
   const [examDate, setExamDate] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [taskUpdating, setTaskUpdating] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -88,10 +103,14 @@ export default function StudyPlanPage() {
         course_id: selectedCourse,
         goal_score: parseFloat(goalScore),
         exam_date: examDate,
+        daily_minutes: parseInt(dailyMinutes) || 90,
       })
       setPlan(result)
+      setToast({ message: '学习计划已生成', type: 'success' })
     } catch (err) {
       console.error('Failed to generate plan:', err)
+      const detail = (err as { message?: string })?.message
+      setToast({ message: detail || '生成计划失败，请稍后重试', type: 'error' })
     } finally {
       setGenerating(false)
     }
@@ -108,10 +127,12 @@ export default function StudyPlanPage() {
       setPlan({
         ...plan,
         plan_content: newTasks,
-        progress: result.progress,
+        progress: result.progress ?? plan.progress,
       })
     } catch (err) {
       console.error('Failed to update task:', err)
+      const detail = (err as { message?: string })?.message
+      setToast({ message: detail || '任务更新失败', type: 'error' })
     } finally {
       setTaskUpdating(false)
     }
@@ -124,50 +145,41 @@ export default function StudyPlanPage() {
     try {
       const result = await completeNextTask()
       const newTasks = [...plan.plan_content]
-      if (result.task_index >= 0) {
+      if (result.task_index != null && result.task_index >= 0 && result.task_index < newTasks.length) {
         newTasks[result.task_index] = { ...newTasks[result.task_index], done: true }
       }
       setPlan({
         ...plan,
         plan_content: newTasks,
-        progress: result.progress,
+        progress: result.progress ?? plan.progress,
       })
     } catch (err) {
       console.error('Failed to complete next task:', err)
+      const detail = (err as { message?: string })?.message
+      setToast({ message: detail || '操作失败，请稍后重试', type: 'error' })
     } finally {
       setTaskUpdating(false)
     }
   }
 
-  const getPhaseTasks = (tasks: StudyPlanTask[]) => {
-    const phases: { name: string; tasks: StudyPlanTask[] }[] = [
-      { name: '第一阶段：基础知识补强', tasks: [] },
-      { name: '第二阶段：综合练习', tasks: [] },
-      { name: '第三阶段：模拟考试', tasks: [] },
-      { name: '第四阶段：最终复习', tasks: [] },
-    ]
-
-    tasks.forEach(task => {
-      if (task.type === 'review' && task.task.includes('强化')) {
-        phases[0].tasks.push(task)
-      } else if (task.type === 'practice') {
-        phases[1].tasks.push(task)
-      } else if (task.type === 'mock_exam') {
-        phases[2].tasks.push(task)
-      } else {
-        phases[3].tasks.push(task)
-      }
+  const getDailyTasks = (tasks: StudyPlanTask[]) => {
+    const grouped = new Map<number, { task: StudyPlanTask; index: number }[]>()
+    tasks.forEach((task, index) => {
+      if (!grouped.has(task.day)) grouped.set(task.day, [])
+      grouped.get(task.day)!.push({ task, index })
     })
-
-    return phases.filter(p => p.tasks.length > 0)
+    return Array.from(grouped.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([day, dayTasks]) => ({ day, tasks: dayTasks }))
   }
 
-  const phases = plan ? getPhaseTasks(plan.plan_content) : []
+  const dailyPlans = plan ? getDailyTasks(plan.plan_content) : []
   const completedCount = plan?.plan_content.filter(t => t.done).length || 0
   const totalCount = plan?.plan_content.length || 0
 
   return (
     <div className="space-y-6">
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       <div>
         <h1 className="text-2xl font-bold text-text-primary flex items-center gap-3">
           <span className="text-3xl">📋</span>
@@ -203,6 +215,18 @@ export default function StudyPlanPage() {
               value={goalScore}
               onChange={(e) => setGoalScore(e.target.value)}
             />
+
+            <Select
+              label="每日学习时长"
+              value={dailyMinutes}
+              onChange={(e) => setDailyMinutes(e.target.value)}
+            >
+              <option value="30">30 分钟（轻度）</option>
+              <option value="60">60 分钟（适中）</option>
+              <option value="90">90 分钟（推荐）</option>
+              <option value="120">120 分钟（强化）</option>
+              <option value="180">180 分钟（冲刺）</option>
+            </Select>
 
             <Input
               label="考试日期"
@@ -273,60 +297,83 @@ export default function StudyPlanPage() {
                 ))}
               </div>
             ) : plan && plan.plan_content.length > 0 ? (
-              <div className="space-y-6 max-h-[600px] overflow-y-auto pr-2">
-                {phases.map((phase, phaseIndex) => (
-                  <div key={phaseIndex}>
-                    <h4 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-accent-primary text-white text-xs flex items-center justify-center">
-                        {phaseIndex + 1}
-                      </span>
-                      {phase.name}
-                    </h4>
-                    <div className="space-y-2 ml-8">
-                      {phase.tasks.map((task) => {
-                        const taskIndex = plan.plan_content.findIndex(
-                          t => t.task === task.task && t.day === task.day
-                        )
-                        const taskInfo = taskTypeMap[task.type] || { label: task.type, icon: '📌', color: 'bg-bg-hover text-text-secondary' }
-                        const priorityInfo = priorityMap[task.priority] || { label: task.priority, variant: 'default' as const }
+              <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                {dailyPlans.map((dayPlan, idx) => {
+                  const dayTotal = dayPlan.tasks.reduce((s, t) => s + (t.task.duration_min || 0), 0)
+                  const dayDone = dayPlan.tasks.filter(t => t.task.done).length
+                  const allDone = dayDone === dayPlan.tasks.length
+                  return (
+                    <div
+                      key={dayPlan.day}
+                      className={`rounded-xl border transition-colors ${
+                        allDone
+                          ? 'border-success/30 bg-success/5'
+                          : idx === 0
+                            ? 'border-accent-primary/50 bg-accent-primary/5'
+                            : 'border-border-default'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-border-default/60">
+                        <div className="flex items-center gap-3">
+                          <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold ${
+                            allDone ? 'bg-success text-white' : 'bg-accent-primary text-white'
+                          }`}>
+                            {dayPlan.day}
+                          </span>
+                          <div>
+                            <p className="text-sm font-semibold text-text-primary">第 {dayPlan.day} 天</p>
+                            <p className="text-xs text-text-muted">
+                              {dayPlan.tasks.length} 个任务 · 约 {dayTotal} 分钟
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {allDone && <Badge variant="success" size="sm">✓ 已完成</Badge>}
+                          <span className="text-xs text-text-muted">{dayDone}/{dayPlan.tasks.length}</span>
+                        </div>
+                      </div>
+                      <div className="p-3 space-y-2">
+                        {dayPlan.tasks.map(({ task, index }) => {
+                          const taskInfo = taskTypeMap[task.type] || { label: task.type, icon: '📌', color: 'bg-bg-hover text-text-secondary' }
+                          const priorityInfo = priorityMap[task.priority] || { label: task.priority, variant: 'default' as const }
 
-                        return (
-                          <div
-                            key={taskIndex}
-                            className={`flex items-start gap-3 p-3 rounded-lg transition-colors ${
-                              task.done ? 'bg-success/5 opacity-70' : 'bg-bg-hover/30 hover:bg-bg-hover/50'
-                            }`}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={task.done}
-                              onChange={(e) => handleToggleTask(taskIndex, e.target.checked)}
-                              className="mt-1 w-4 h-4 rounded border-border-default text-accent-primary focus:ring-accent-primary/20"
-                              disabled={taskUpdating}
-                            />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className={`text-sm ${task.done ? 'line-through text-text-muted' : 'text-text-primary font-medium'}`}>
-                                  {task.task}
-                                </span>
-                                <span className={`px-2 py-0.5 rounded text-xs ${taskInfo.color}`}>
-                                  {taskInfo.icon} {taskInfo.label}
-                                </span>
-                                <Badge variant={priorityInfo.variant} size="sm">
-                                  {priorityInfo.label}优先级
-                                </Badge>
-                              </div>
-                              <div className="flex items-center gap-4 mt-1 text-xs text-text-muted">
-                                <span>第 {task.day} 天</span>
-                                <span>{task.duration_min} 分钟</span>
+                          return (
+                            <div
+                              key={index}
+                              className={`flex items-start gap-3 p-3 rounded-lg transition-colors ${
+                                task.done ? 'bg-success/10 opacity-70' : 'bg-bg-hover/40 hover:bg-bg-hover/70'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={task.done}
+                                onChange={(e) => handleToggleTask(index, e.target.checked)}
+                                className="mt-1 w-4 h-4 rounded border-border-default text-accent-primary focus:ring-accent-primary/20"
+                                disabled={taskUpdating}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className={`text-sm ${task.done ? 'line-through text-text-muted' : 'text-text-primary font-medium'}`}>
+                                    {task.task}
+                                  </span>
+                                  <span className={`px-2 py-0.5 rounded text-xs ${taskInfo.color}`}>
+                                    {taskInfo.icon} {taskInfo.label}
+                                  </span>
+                                  <Badge variant={priorityInfo.variant} size="sm">
+                                    {priorityInfo.label}优先级
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center gap-4 mt-1 text-xs text-text-muted">
+                                  <span>⏱ {task.duration_min} 分钟</span>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        )
-                      })}
+                          )
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             ) : (
               <div className="text-center py-16 text-text-muted">

@@ -6,6 +6,7 @@ export interface LLMConfig {
   api_url: string
   api_key: string
   model: string
+  can_write?: boolean
 }
 
 export const getLLMConfig = async (): Promise<LLMConfig> => {

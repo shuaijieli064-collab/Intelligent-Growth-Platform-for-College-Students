@@ -24,6 +24,12 @@ def get_student_scores(
     scores = sc_dao.get_student_scores(student_id)
     result = []
     for s in scores:
+        # 已删除成绩（分数全部清空）的选课行不再返回，避免“删除无效”的错觉
+        if all(
+            s.get(k) is None
+            for k in ("usual_score", "midterm_score", "final_score", "predicted_final")
+        ):
+            continue
         has_final = s.get("final_score") is not None
         result.append(ScoreResponse(
             id=s.get("id"),

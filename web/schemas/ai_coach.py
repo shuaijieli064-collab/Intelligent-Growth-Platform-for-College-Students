@@ -25,6 +25,7 @@ class ChatRequest(BaseModel):
 
 class QuickActionRequest(BaseModel):
     action_type: str
+    session_id: Optional[str] = None
 
 
 class NewSessionResponse(BaseModel):

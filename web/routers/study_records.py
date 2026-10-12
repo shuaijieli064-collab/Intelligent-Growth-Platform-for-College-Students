@@ -69,8 +69,7 @@ def create_study_record(
         focus_score=record_in.focus_score,
         notes=record_in.notes,
     )
-    records = dao.get_by_student(student_id, days=30)
-    created = next((r for r in records if r["record_id"] == record_id), None)
+    created = dao.get_by_id(record_id)
     if not created:
         raise HTTPException(status_code=500, detail="创建失败")
     course_name = None
@@ -122,9 +121,7 @@ def delete_all_study_records(
     student = student_dao.get_by_id(student_id)
     if not student:
         raise HTTPException(status_code=404, detail="学生不存在")
-    success = dao.delete_all_by_student(student_id)
-    if not success:
-        raise HTTPException(status_code=500, detail="删除失败")
+    dao.delete_all_by_student(student_id)
     twin = DigitalTwin(student_id, db)
     twin.save_assessment()
     return ApiResponse(data={"student_id": student_id}, message="已清空全部学习记录")

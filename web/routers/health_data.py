@@ -61,8 +61,7 @@ def create_physical_health(
         steps=record_in.steps,
     )
     record_id = dao.save_physical_record(record)
-    records = dao.get_physical_records(student_id, days=30)
-    created = next((r for r in records if r["id"] == record_id), None)
+    created = dao.get_physical_by_id(record_id)
     if not created:
         raise HTTPException(status_code=500, detail="创建失败")
     twin = DigitalTwin(student_id, db)
@@ -84,11 +83,12 @@ def create_physical_health(
 @router.delete("/physical-health/{record_id}", response_model=ApiResponse[dict])
 def delete_physical_health(
     record_id: int,
+    student_id: int = Depends(get_current_student_id),
     dao: HealthDAO = Depends(get_health_dao),
 ):
-    success = dao.delete_physical(record_id)
+    success = dao.delete_physical(record_id, student_id)
     if not success:
-        raise HTTPException(status_code=404, detail="记录不存在")
+        raise HTTPException(status_code=404, detail="记录不存在或无权访问")
     return ApiResponse(data={"id": record_id}, message="删除成功")
 
 
@@ -136,8 +136,7 @@ def create_mental_health(
         notes=record_in.notes,
     )
     record_id = dao.save_mental_record(record)
-    records = dao.get_mental_records(student_id, days=30)
-    created = next((r for r in records if r["id"] == record_id), None)
+    created = dao.get_mental_by_id(record_id)
     if not created:
         raise HTTPException(status_code=500, detail="创建失败")
     twin = DigitalTwin(student_id, db)
@@ -159,11 +158,12 @@ def create_mental_health(
 @router.delete("/mental-health/{record_id}", response_model=ApiResponse[dict])
 def delete_mental_health(
     record_id: int,
+    student_id: int = Depends(get_current_student_id),
     dao: HealthDAO = Depends(get_health_dao),
 ):
-    success = dao.delete_mental(record_id)
+    success = dao.delete_mental(record_id, student_id)
     if not success:
-        raise HTTPException(status_code=404, detail="记录不存在")
+        raise HTTPException(status_code=404, detail="记录不存在或无权访问")
     return ApiResponse(data={"id": record_id}, message="删除成功")
 
 
@@ -209,8 +209,7 @@ def create_social_health(
         interaction_count=record_in.interaction_count,
     )
     record_id = dao.save_social_record(record)
-    records = dao.get_social_records(student_id, days=30)
-    created = next((r for r in records if r["id"] == record_id), None)
+    created = dao.get_social_by_id(record_id)
     if not created:
         raise HTTPException(status_code=500, detail="创建失败")
     twin = DigitalTwin(student_id, db)
@@ -231,9 +230,10 @@ def create_social_health(
 @router.delete("/social-health/{record_id}", response_model=ApiResponse[dict])
 def delete_social_health(
     record_id: int,
+    student_id: int = Depends(get_current_student_id),
     dao: HealthDAO = Depends(get_health_dao),
 ):
-    success = dao.delete_social(record_id)
+    success = dao.delete_social(record_id, student_id)
     if not success:
-        raise HTTPException(status_code=404, detail="记录不存在")
+        raise HTTPException(status_code=404, detail="记录不存在或无权访问")
     return ApiResponse(data={"id": record_id}, message="删除成功")

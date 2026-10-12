@@ -1,6 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import ReactECharts from 'echarts-for-react'
+import { useTheme } from '@/hooks/useTheme'
+import { cssVarRgb } from '@/utils/cssVar'
+import { escapeHtml } from '@/utils/safe'
 import { getFocusData, type FocusMonitorData } from '@/api/focusMonitor'
 
 const levelColorMap: Record<string, string> = {
@@ -18,6 +21,7 @@ const levelBgMap: Record<string, string> = {
 }
 
 export default function FocusMonitorPage() {
+  const { isDark } = useTheme()
   const [data, setData] = useState<FocusMonitorData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -43,24 +47,24 @@ export default function FocusMonitorPage() {
     return {
       tooltip: {
         trigger: 'axis',
-        backgroundColor: 'rgba(var(--bg-card-rgb), 0.95)',
-        borderColor: 'rgba(var(--border-default-rgb), 0.5)',
-        textStyle: { color: 'rgba(var(--text-primary-rgb), 1)' },
+        backgroundColor: cssVarRgb('--bg-card-rgb', 0.95),
+        borderColor: cssVarRgb('--border-default-rgb', 0.6),
+        textStyle: { color: cssVarRgb('--text-primary-rgb') },
       },
       grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
       xAxis: {
         type: 'category',
         data: data.last_14_days.map(d => d.date.slice(5)),
-        axisLine: { lineStyle: { color: 'rgba(var(--border-default-rgb), 0.5)' } },
-        axisLabel: { color: 'rgba(var(--text-muted-rgb), 1)' },
+        axisLine: { lineStyle: { color: cssVarRgb('--border-default-rgb', 0.55) } },
+        axisLabel: { color: cssVarRgb('--text-secondary-rgb') },
       },
       yAxis: {
         type: 'value',
         min: 0,
         max: 100,
-        axisLine: { lineStyle: { color: 'rgba(var(--border-default-rgb), 0.5)' } },
-        axisLabel: { color: 'rgba(var(--text-muted-rgb), 1)' },
-        splitLine: { lineStyle: { color: 'rgba(var(--border-default-rgb), 0.3)' } },
+        axisLine: { lineStyle: { color: cssVarRgb('--border-default-rgb', 0.55) } },
+        axisLabel: { color: cssVarRgb('--text-secondary-rgb') },
+        splitLine: { lineStyle: { color: cssVarRgb('--border-default-rgb', 0.3) } },
       },
       series: [
         {
@@ -70,22 +74,22 @@ export default function FocusMonitorPage() {
           symbol: 'circle',
           symbolSize: 6,
           data: data.last_14_days.map(d => d.focus_score),
-          lineStyle: { color: 'rgba(var(--accent-primary-rgb), 1)', width: 3 },
-          itemStyle: { color: 'rgba(var(--accent-primary-rgb), 1)' },
+          lineStyle: { color: cssVarRgb('--accent-primary-rgb'), width: 3 },
+          itemStyle: { color: cssVarRgb('--accent-primary-rgb') },
           areaStyle: {
             color: {
               type: 'linear',
               x: 0, y: 0, x2: 0, y2: 1,
               colorStops: [
-                { offset: 0, color: 'rgba(var(--accent-primary-rgb), 0.3)' },
-                { offset: 1, color: 'rgba(var(--accent-primary-rgb), 0.05)' },
+                { offset: 0, color: cssVarRgb('--accent-primary-rgb', 0.35) },
+                { offset: 1, color: cssVarRgb('--accent-primary-rgb', 0.05) },
               ],
             },
           },
         },
       ],
     }
-  }, [data])
+  }, [data, isDark])
 
   const calendarOption = useMemo(() => {
     if (!data) return {}
@@ -96,13 +100,13 @@ export default function FocusMonitorPage() {
     return {
       tooltip: {
         position: 'top',
-        backgroundColor: 'rgba(var(--bg-card-rgb), 0.95)',
-        borderColor: 'rgba(var(--border-default-rgb), 0.5)',
-        textStyle: { color: 'rgba(var(--text-primary-rgb), 1)' },
+        backgroundColor: cssVarRgb('--bg-card-rgb', 0.95),
+        borderColor: cssVarRgb('--border-default-rgb', 0.6),
+        textStyle: { color: cssVarRgb('--text-primary-rgb') },
         formatter: (params: any) => {
           const date = params.data[0]
           const value = params.data[1]
-          return `${date}<br/>专注指数: ${value.toFixed(0)}`
+          return `${escapeHtml(date)}<br/>专注指数: ${Number(value).toFixed(0)}`
         },
       },
       visualMap: {
@@ -114,13 +118,13 @@ export default function FocusMonitorPage() {
         bottom: 0,
         inRange: {
           color: [
-            'rgba(var(--danger-rgb), 0.3)',
-            'rgba(var(--warning-rgb), 0.6)',
-            'rgba(var(--accent-primary-rgb), 0.8)',
-            'rgba(var(--success-rgb), 1)',
+            cssVarRgb('--danger-rgb', 0.35),
+            cssVarRgb('--warning-rgb', 0.65),
+            cssVarRgb('--accent-primary-rgb', 0.85),
+            cssVarRgb('--success-rgb'),
           ],
         },
-        textStyle: { color: 'rgba(var(--text-muted-rgb), 1)' },
+        textStyle: { color: cssVarRgb('--text-secondary-rgb') },
       },
       calendar: {
         top: 30,
@@ -130,12 +134,12 @@ export default function FocusMonitorPage() {
         range: dates.length > 0 ? [dates[0], dates[dates.length - 1]] : [],
         itemStyle: {
           borderWidth: 2,
-          borderColor: 'rgba(var(--bg-base-rgb), 1)',
+          borderColor: cssVarRgb('--bg-base-rgb'),
           borderRadius: 4,
         },
         splitLine: { show: false },
-        dayLabel: { color: 'rgba(var(--text-muted-rgb), 1)', nameMap: 'ZH' },
-        monthLabel: { color: 'rgba(var(--text-secondary-rgb), 1)' },
+        dayLabel: { color: cssVarRgb('--text-secondary-rgb'), nameMap: 'ZH' },
+        monthLabel: { color: cssVarRgb('--text-secondary-rgb') },
         yearLabel: { show: false },
       },
       series: [
@@ -146,7 +150,7 @@ export default function FocusMonitorPage() {
         },
       ],
     }
-  }, [data])
+  }, [data, isDark])
 
   const trendInfo = useMemo(() => {
     if (!data) return { text: '稳定', color: 'text-text-muted', icon: '➡️' }

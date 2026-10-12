@@ -9,10 +9,18 @@ class KnowledgeDAO:
     def __init__(self, db: DatabaseManager) -> None:
         self._db = db
 
-    def get_knowledge_points(self, course_id: int) -> list[dict]:
+    def get_knowledge_points(self, course_id: int,
+                             student_id: Optional[int] = None) -> list[dict]:
+        """列出课程知识点；student_id 非空时仅返回预置(created_by NULL)与该学生自建的节点."""
+        if student_id is None:
+            return self._db.execute_query(
+                "SELECT * FROM knowledge_point WHERE course_id = %s ORDER BY kp_id",
+                (course_id,)
+            )
         return self._db.execute_query(
-            "SELECT * FROM knowledge_point WHERE course_id = %s ORDER BY kp_id",
-            (course_id,)
+            "SELECT * FROM knowledge_point WHERE course_id = %s "
+            "AND (created_by IS NULL OR created_by = %s) ORDER BY kp_id",
+            (course_id, student_id)
         )
 
     def get_all_knowledge_points(self) -> list[dict]:
@@ -21,11 +29,20 @@ class KnowledgeDAO:
             "JOIN course c ON kp.course_id = c.course_id ORDER BY kp.course_id, kp.kp_id"
         )
 
-    def get_edges(self, course_id: int) -> list[tuple]:
-        rows = self._db.execute_query(
-            "SELECT kp_id, parent_kp_id FROM knowledge_point "
-            "WHERE course_id = %s AND parent_kp_id IS NOT NULL", (course_id,)
-        )
+    def get_edges(self, course_id: int,
+                  student_id: Optional[int] = None) -> list[tuple]:
+        if student_id is None:
+            rows = self._db.execute_query(
+                "SELECT kp_id, parent_kp_id FROM knowledge_point "
+                "WHERE course_id = %s AND parent_kp_id IS NOT NULL", (course_id,)
+            )
+        else:
+            rows = self._db.execute_query(
+                "SELECT kp_id, parent_kp_id FROM knowledge_point "
+                "WHERE course_id = %s AND parent_kp_id IS NOT NULL "
+                "AND (created_by IS NULL OR created_by = %s)",
+                (course_id, student_id)
+            )
         return [(r["parent_kp_id"], r["kp_id"]) for r in rows]
 
     def get_mastery(self, student_id: int) -> list[dict]:
@@ -64,13 +81,14 @@ class KnowledgeDAO:
             ) > 0
 
     def create_knowledge_point(self, kp: KnowledgePoint) -> int:
-        sql = ("INSERT INTO knowledge_point (kp_name, course_id, parent_kp_id, difficulty, weight) "
-               "VALUES (%s, %s, %s, %s, %s)")
+        sql = ("INSERT INTO knowledge_point (kp_name, course_id, parent_kp_id, "
+               "difficulty, weight, created_by, node_type) VALUES (%s, %s, %s, %s, %s, %s, %s)")
         if self._db._db_type == "postgres":
             sql += " RETURNING kp_id"
         return self._db.execute_insert(
             sql,
-            (kp.kp_name, kp.course_id, kp.parent_kp_id, kp.difficulty, kp.weight),
+            (kp.kp_name, kp.course_id, kp.parent_kp_id, kp.difficulty,
+             kp.weight, kp.created_by, kp.node_type),
         )
 
     def get_kp_by_id(self, kp_id: int) -> Optional[dict]:

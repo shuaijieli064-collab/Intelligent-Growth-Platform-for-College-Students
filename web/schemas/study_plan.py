@@ -29,6 +29,7 @@ class GeneratePlanRequest(BaseModel):
     course_id: int
     goal_score: float
     exam_date: date
+    daily_minutes: int = 90
 
 
 class UpdateTaskRequest(BaseModel):

@@ -19,6 +19,21 @@ class RiskDAO:
              alert.alert_message, alert.rule_triggered),
         )
 
+    def save_alerts(self, alerts: list[RiskAlert]) -> None:
+        """批量插入告警：同一规则已有未解决告警时跳过，避免重复刷屏."""
+        for alert in alerts:
+            if self.has_open_alert(alert.student_id, alert.rule_triggered):
+                continue
+            self.save_alert(alert)
+
+    def has_open_alert(self, student_id: int, rule_triggered: str) -> bool:
+        rows = self._db.execute_query(
+            "SELECT alert_id FROM risk_alert WHERE student_id = %s "
+            "AND rule_triggered = %s AND is_resolved = FALSE LIMIT 1",
+            (student_id, rule_triggered),
+        )
+        return len(rows) > 0
+
     def get_by_student(self, student_id: int,
                        unresolved_only: bool = False) -> list[RiskAlert]:
         sql = "SELECT * FROM risk_alert WHERE student_id = %s"
@@ -34,13 +49,20 @@ class RiskDAO:
         )
         return [RiskAlert(**r) for r in rows]
 
-    def resolve(self, alert_id: int) -> bool:
-        return self._db.execute_update(
-            "UPDATE risk_alert SET is_resolved=TRUE, resolved_at=%s WHERE alert_id=%s",
-            (datetime.now(), alert_id),
-        ) > 0
+    def resolve(self, alert_id: int, student_id: int | None = None) -> bool:
+        if student_id is None:
+            sql = "UPDATE risk_alert SET is_resolved=TRUE, resolved_at=%s WHERE alert_id=%s"
+            params = (datetime.now(), alert_id)
+        else:
+            sql = ("UPDATE risk_alert SET is_resolved=TRUE, resolved_at=%s "
+                   "WHERE alert_id=%s AND student_id=%s")
+            params = (datetime.now(), alert_id, student_id)
+        return self._db.execute_update(sql, params) > 0
 
-    def delete(self, alert_id: int) -> bool:
-        return self._db.execute_update(
-            "DELETE FROM risk_alert WHERE alert_id = %s", (alert_id,),
-        ) > 0
+    def delete(self, alert_id: int, student_id: int | None = None) -> bool:
+        if student_id is None:
+            sql, params = "DELETE FROM risk_alert WHERE alert_id = %s", (alert_id,)
+        else:
+            sql = "DELETE FROM risk_alert WHERE alert_id = %s AND student_id = %s"
+            params = (alert_id, student_id)
+        return self._db.execute_update(sql, params) > 0

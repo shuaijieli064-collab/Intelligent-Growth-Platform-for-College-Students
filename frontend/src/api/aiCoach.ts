@@ -54,12 +54,14 @@ export const sendMessage = async (
 }
 
 export const sendQuickAction = async (
-  actionType: QuickActionType
+  actionType: QuickActionType,
+  sessionId: string | null = null
 ): Promise<CoachMessage> => {
   const response = await apiClient.post<ApiResponse<CoachMessage>>(
     `/api/ai-coach/quick-action`,
     {
       action_type: actionType,
+      session_id: sessionId,
     }
   )
   return (response as unknown as ApiResponse<CoachMessage>).data!

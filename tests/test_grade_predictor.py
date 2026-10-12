@@ -11,22 +11,21 @@ def test_train_and_predict() -> None:
     db = DatabaseManager.get_instance()
     predictor = GradePredictorV2(db)
 
-    X, y = predictor.load_training_data()
-    print(f"  ✓ 加载训练数据: {len(X)} 条记录")
+    metrics = predictor.train()
+    if "error" in metrics:
+        print(f"  ⚠ 训练数据不足: {metrics['error']}")
+        return
 
-    if len(X) >= 5:
-        metrics = predictor.train()
-        if "error" not in metrics:
-            print(f"  ✓ 模型训练: R²={metrics['r2_score']}, MAE={metrics['mae']}, "
-                  f"RMSE={metrics['rmse']}")
+    print(f"  ✓ 模型训练: 样本={metrics['samples']}, CV-MAE={metrics['cv_mae']}, "
+          f"算法={metrics['algorithm']}")
 
-            pred = predictor.predict(80, 75)
-            assert 0 <= pred <= 100, f"预测值异常: {pred}"
-            print(f"  ✓ 预测测试 (usual=80, midterm=75): {pred}")
-        else:
-            print(f"  ⚠ 训练失败: {metrics['error']}")
-    else:
-        print("  ⚠ 训练数据不足，跳过训练测试")
+    pred = predictor.predict(80, 75)
+    point = pred["predicted"]
+    assert 0 <= point <= 100, f"预测值异常: {point}"
+    assert 0 <= pred["pass_probability"] <= 100, f"及格概率异常: {pred['pass_probability']}"
+    assert pred["ci_lower"] <= point <= pred["ci_upper"], f"置信区间异常: {pred}"
+    print(f"  ✓ 预测测试 (usual=80, midterm=75): {point} "
+          f"CI=[{pred['ci_lower']}, {pred['ci_upper']}] 及格概率={pred['pass_probability']}%")
 
 
 def main() -> None:

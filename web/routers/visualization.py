@@ -148,7 +148,7 @@ def get_knowledge_heatmap(
         all_courses.append(course.course_name)
         try:
             kg = KnowledgeGraph(db)
-            kg.build_graph(course.course_id)
+            kg.build_graph(course.course_id, student_id)
             colors = kg.mark_mastery(student_id)
             node_labels = kg.get_node_labels()
             nodes, _ = kg.get_graph_data()
@@ -158,6 +158,8 @@ def get_knowledge_heatmap(
             mastery_map = {m["kp_id"]: m["mastery_level"] for m in all_mastery}
 
             for node_id in nodes:
+                if kg.is_structure_node(node_id):
+                    continue
                 kp_name = node_labels.get(node_id, f"KP-{node_id}")
                 mastery = mastery_map.get(node_id, 0)
                 if kp_name not in all_kps:

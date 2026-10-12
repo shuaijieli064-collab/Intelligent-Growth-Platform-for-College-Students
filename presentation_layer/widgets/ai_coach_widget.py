@@ -8,7 +8,8 @@ from PyQt5.QtCore import Qt, QTimer
 
 from data_layer.database import DatabaseManager
 from business_layer.ai_coach import AICoach
-from config import LLM_PROVIDERS, save_llm_config_to_json, reload_llm_config, LLM_CONFIG
+import config as app_config
+from config import LLM_PROVIDERS, save_llm_config_to_json, reload_llm_config
 
 
 class AICoachWidget(QWidget):
@@ -17,7 +18,7 @@ class AICoachWidget(QWidget):
         self._db = db
         self._student_id = student_id
         self._coach = AICoach(db, student_id)
-        self._api_configured = bool(LLM_CONFIG.get("api_key", ""))
+        self._api_configured = bool(app_config.LLM_CONFIG.get("api_key", ""))
         self._setup_ui()
         self._refresh_api_status()
 
@@ -57,7 +58,7 @@ class AICoachWidget(QWidget):
         for key, info in LLM_PROVIDERS.items():
             self._provider_combo.addItem(info["name"], key)
         # Select current provider
-        current_provider = LLM_CONFIG.get("provider", "deepseek")
+        current_provider = app_config.LLM_CONFIG.get("provider", "deepseek")
         idx = self._provider_combo.findData(current_provider)
         if idx >= 0:
             self._provider_combo.setCurrentIndex(idx)
@@ -71,7 +72,7 @@ class AICoachWidget(QWidget):
         self._key_input = QLineEdit()
         self._key_input.setPlaceholderText("输入API Key...")
         self._key_input.setEchoMode(QLineEdit.Password)
-        current_key = LLM_CONFIG.get("api_key", "")
+        current_key = app_config.LLM_CONFIG.get("api_key", "")
         if current_key and current_key not in ("your-zhipu-api-key-here", "your-dashscope-api-key-here"):
             self._key_input.setText(current_key)
         self._key_input.setStyleSheet("padding: 6px 10px; font-size: 16px; border-radius: 6px; min-width: 200px;")
@@ -290,4 +291,6 @@ class AICoachWidget(QWidget):
         scrollbar.setValue(scrollbar.maximum())
 
     def refresh(self) -> None:
+        # Rebuild coach so new messages are stored under the current student
+        self._coach = AICoach(self._db, self._student_id)
         self._refresh_api_status()

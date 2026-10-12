@@ -47,6 +47,7 @@ class DigitalTwin:
         if not scores:
             return 50.0
         total = 0.0
+        graded = 0
         for s in scores:
             parts = []
             us = float(s["usual_score"]) if s.get("usual_score") is not None else None
@@ -63,7 +64,10 @@ class DigitalTwin:
                 parts.append(parts[-1] * (remaining / 0.3) if parts else 0)
             if parts:
                 total += sum(parts)
-        avg = total / len(scores) if scores else 50.0
+                graded += 1
+        if not graded:
+            return 50.0
+        avg = total / graded
         return round(clamp(avg), 1)
 
     def calculate_physical_health(self, records: list = None) -> float:

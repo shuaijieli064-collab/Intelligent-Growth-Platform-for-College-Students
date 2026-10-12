@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import ReactECharts from 'echarts-for-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Progress } from '@/components/ui/Progress'
+import { useTheme } from '@/hooks/useTheme'
 import { getDigitalTwin, getDigitalTwinHistory, type DigitalTwinData, type HealthAssessmentItem } from '@/api/digitalTwin'
 
 const riskLevelMap: Record<string, { label: string; variant: 'success' | 'warning' | 'danger' }> = {
@@ -34,10 +35,15 @@ function formatDate(dateStr?: string): string {
 }
 
 export default function DigitalTwinPage() {
+  const { isDark } = useTheme()
   const [data, setData] = useState<DigitalTwinData | null>(null)
   const [history, setHistory] = useState<HealthAssessmentItem[]>([])
   const [loading, setLoading] = useState(true)
   const [historyLoading, setHistoryLoading] = useState(false)
+
+  const axisTextColor = isDark ? '#b4b4b4' : '#555555'
+  const axisMutedColor = isDark ? '#9a9aa3' : '#888888'
+  const axisLineColor = isDark ? '#3a3c41' : '#e8e5e1'
 
   useEffect(() => {
     const fetchData = async () => {
@@ -82,12 +88,12 @@ export default function DigitalTwinPage() {
       shape: 'polygon',
       splitNumber: 4,
       axisName: {
-        color: 'var(--text-secondary)',
+        color: axisTextColor,
         fontSize: 12,
       },
       splitLine: {
         lineStyle: {
-          color: 'var(--border-default)',
+          color: axisLineColor,
         },
       },
       splitArea: {
@@ -98,7 +104,7 @@ export default function DigitalTwinPage() {
       },
       axisLine: {
         lineStyle: {
-          color: 'var(--border-default)',
+          color: axisLineColor,
         },
       },
     },
@@ -115,14 +121,14 @@ export default function DigitalTwinPage() {
             ],
             name: '健康度',
             areaStyle: {
-              color: 'rgba(99, 102, 241, 0.2)',
+              color: 'rgba(217, 119, 6, 0.2)',
             },
             lineStyle: {
-              color: '#6366f1',
+              color: '#d97706',
               width: 2,
             },
             itemStyle: {
-              color: '#6366f1',
+              color: '#d97706',
             },
           },
         ],
@@ -140,7 +146,7 @@ export default function DigitalTwinPage() {
     legend: {
       data: ['综合健康', '学业', '身体', '心理', '社交'],
       textStyle: {
-        color: 'var(--text-secondary)',
+        color: axisTextColor,
       },
       top: 0,
     },
@@ -156,12 +162,12 @@ export default function DigitalTwinPage() {
       boundaryGap: false,
       data: [...history].reverse().map(h => formatDate(h.assessment_date)),
       axisLabel: {
-        color: 'var(--text-muted)',
+        color: axisMutedColor,
         fontSize: 10,
       },
       axisLine: {
         lineStyle: {
-          color: 'var(--border-default)',
+          color: axisLineColor,
         },
       },
     },
@@ -170,11 +176,11 @@ export default function DigitalTwinPage() {
       min: 0,
       max: 100,
       axisLabel: {
-        color: 'var(--text-muted)',
+        color: axisMutedColor,
       },
       splitLine: {
         lineStyle: {
-          color: 'var(--border-default)',
+          color: axisLineColor,
         },
       },
     },
@@ -184,15 +190,15 @@ export default function DigitalTwinPage() {
         type: 'line',
         smooth: true,
         data: [...history].reverse().map(h => h.overall_health),
-        lineStyle: { width: 2, color: '#6366f1' },
-        itemStyle: { color: '#6366f1' },
+        lineStyle: { width: 2, color: '#d97706' },
+        itemStyle: { color: '#d97706' },
         areaStyle: {
           color: {
             type: 'linear',
             x: 0, y: 0, x2: 0, y2: 1,
             colorStops: [
-              { offset: 0, color: 'rgba(99, 102, 241, 0.3)' },
-              { offset: 1, color: 'rgba(99, 102, 241, 0.05)' },
+              { offset: 0, color: 'rgba(217, 119, 6, 0.3)' },
+              { offset: 1, color: 'rgba(217, 119, 6, 0.05)' },
             ],
           },
         },

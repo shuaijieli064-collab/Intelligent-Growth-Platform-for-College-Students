@@ -142,8 +142,8 @@ class DigitalTwinWidget(QWidget):
         self._radar_canvas.draw()
 
     def refresh(self) -> None:
-        if not hasattr(self, '_twin'):
-            self._twin = DigitalTwin(self._student_id, self._db)
+        # Always rebuild so the twin follows the current student
+        self._twin = DigitalTwin(self._student_id, self._db)
         result = self._twin.assess_overall()
 
         color = self._update_health_bar_color(result.overall)

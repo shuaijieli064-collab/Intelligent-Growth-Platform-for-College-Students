@@ -13,6 +13,11 @@ class HealthDAO:
     # ── 健康评估 ──────────────────────────────────────────────
 
     def save_assessment(self, h: HealthAssessment) -> int:
+        # 同一天只保留一条快照：先删旧记录，避免每次刷新页面都追加
+        self._db.execute_update(
+            "DELETE FROM health_assessment WHERE student_id = %s AND assessment_date = %s",
+            (h.student_id, h.assessment_date),
+        )
         sql = ("INSERT INTO health_assessment (student_id, assessment_date, academic_score, "
                "physical_score, mental_score, social_score, overall_health, risk_level) "
                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)")
@@ -51,10 +56,13 @@ class HealthDAO:
              r.exercise_duration, r.sleep_hours, r.steps),
         )
 
-    def delete_physical(self, record_id: int) -> bool:
-        return self._db.execute_update(
-            "DELETE FROM physical_health_record WHERE id = %s", (record_id,),
-        ) > 0
+    def delete_physical(self, record_id: int, student_id: Optional[int] = None) -> bool:
+        if student_id is None:
+            sql, params = "DELETE FROM physical_health_record WHERE id = %s", (record_id,)
+        else:
+            sql = "DELETE FROM physical_health_record WHERE id = %s AND student_id = %s"
+            params = (record_id, student_id)
+        return self._db.execute_update(sql, params) > 0
 
     def get_physical_records(self, student_id: int, days: int = 14) -> list[dict]:
         from datetime import date, timedelta
@@ -63,6 +71,12 @@ class HealthDAO:
             "SELECT * FROM physical_health_record WHERE student_id = %s AND record_date >= %s "
             "ORDER BY record_date DESC", (student_id, cutoff),
         )
+
+    def get_physical_by_id(self, record_id: int) -> Optional[dict]:
+        rows = self._db.execute_query(
+            "SELECT * FROM physical_health_record WHERE id = %s", (record_id,),
+        )
+        return rows[0] if rows else None
 
     # ── 心理健康 ──────────────────────────────────────────────
 
@@ -77,10 +91,13 @@ class HealthDAO:
              r.stress_level, r.anxiety_level, r.notes),
         )
 
-    def delete_mental(self, record_id: int) -> bool:
-        return self._db.execute_update(
-            "DELETE FROM mental_health_record WHERE id = %s", (record_id,),
-        ) > 0
+    def delete_mental(self, record_id: int, student_id: Optional[int] = None) -> bool:
+        if student_id is None:
+            sql, params = "DELETE FROM mental_health_record WHERE id = %s", (record_id,)
+        else:
+            sql = "DELETE FROM mental_health_record WHERE id = %s AND student_id = %s"
+            params = (record_id, student_id)
+        return self._db.execute_update(sql, params) > 0
 
     def get_mental_records(self, student_id: int, days: int = 14) -> list[dict]:
         from datetime import date, timedelta
@@ -89,6 +106,12 @@ class HealthDAO:
             "SELECT * FROM mental_health_record WHERE student_id = %s AND record_date >= %s "
             "ORDER BY record_date DESC", (student_id, cutoff),
         )
+
+    def get_mental_by_id(self, record_id: int) -> Optional[dict]:
+        rows = self._db.execute_query(
+            "SELECT * FROM mental_health_record WHERE id = %s", (record_id,),
+        )
+        return rows[0] if rows else None
 
     # ── 社交健康 ──────────────────────────────────────────────
 
@@ -103,10 +126,13 @@ class HealthDAO:
              r.duration_minutes, r.interaction_count),
         )
 
-    def delete_social(self, record_id: int) -> bool:
-        return self._db.execute_update(
-            "DELETE FROM social_health_record WHERE id = %s", (record_id,),
-        ) > 0
+    def delete_social(self, record_id: int, student_id: Optional[int] = None) -> bool:
+        if student_id is None:
+            sql, params = "DELETE FROM social_health_record WHERE id = %s", (record_id,)
+        else:
+            sql = "DELETE FROM social_health_record WHERE id = %s AND student_id = %s"
+            params = (record_id, student_id)
+        return self._db.execute_update(sql, params) > 0
 
     def get_social_records(self, student_id: int, days: int = 30) -> list[dict]:
         from datetime import date, timedelta
@@ -115,3 +141,9 @@ class HealthDAO:
             "SELECT * FROM social_health_record WHERE student_id = %s AND record_date >= %s "
             "ORDER BY record_date DESC", (student_id, cutoff),
         )
+
+    def get_social_by_id(self, record_id: int) -> Optional[dict]:
+        rows = self._db.execute_query(
+            "SELECT * FROM social_health_record WHERE id = %s", (record_id,),
+        )
+        return rows[0] if rows else None

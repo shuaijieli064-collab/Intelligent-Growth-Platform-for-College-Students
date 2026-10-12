@@ -144,7 +144,10 @@ class GrowthArchiveWidget(QWidget):
             self._detail_view.setText(text)
 
     def refresh(self) -> None:
+        # Rebuild archiver so generate/list/delete act on the current student
+        self._archiver = GrowthArchiver(self._db, self._student_id)
         self._report_list.clear()
+        self._detail_view.clear()
         reports = self._archiver.get_reports()
         type_names = {"weekly": "周报", "monthly": "月报", "semester": "学期报告"}
         for r in reports:

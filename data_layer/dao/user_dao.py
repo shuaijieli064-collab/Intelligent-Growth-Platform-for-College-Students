@@ -42,3 +42,9 @@ class UserDAO:
             "UPDATE app_user SET student_id=%s WHERE user_id=%s",
             (student_id, user_id),
         ) > 0
+
+    def update_password(self, user_id: int, password_hash: str) -> bool:
+        return self._db.execute_update(
+            "UPDATE app_user SET password_hash=%s WHERE user_id=%s",
+            (password_hash, user_id),
+        ) > 0

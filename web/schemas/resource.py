@@ -8,6 +8,8 @@ class ResourceItem(BaseModel):
     student_id: int
     kp_id: Optional[int] = None
     kp_name: Optional[str] = None
+    course_id: Optional[int] = None
+    course_name: Optional[str] = None
     resource_type: str
     title: str
     url: str

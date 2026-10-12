@@ -38,7 +38,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="大学生智能成长平台 API")
+_IS_PRODUCTION = os.environ.get("ENV", "").lower() == "production"
+
+app = FastAPI(
+    title="大学生智能成长平台 API",
+    # 生产环境关闭交互式 API 文档，减少攻击面
+    docs_url=None if _IS_PRODUCTION else "/docs",
+    redoc_url=None if _IS_PRODUCTION else "/redoc",
+    openapi_url=None if _IS_PRODUCTION else "/openapi.json",
+)
 
 # CORS 允许的来源：本地开发 + 环境变量配置（Cloudflare Pages 域名）
 _cors_origins = [
@@ -54,7 +62,9 @@ _cors_origins = [
 # 通过环境变量添加生产环境域名（逗号分隔）
 _extra_origins = os.environ.get("CORS_ALLOW_ORIGINS", "")
 if _extra_origins:
-    _cors_origins.extend([o.strip() for o in _extra_origins.split(",") if o.strip()])
+    _cors_origins.extend(
+        [o.strip() for o in _extra_origins.split(",") if o.strip() and o.strip() != "*"]
+    )
 
 app.add_middleware(
     CORSMiddleware,
@@ -66,19 +76,23 @@ app.add_middleware(
 
 
 @app.middleware("http")
-async def log_request_time(request: Request, call_next):
+async def security_and_logging(request: Request, call_next):
     start_time = time.time()
     response = await call_next(request)
     process_time = (time.time() - start_time) * 1000
     response.headers["X-Process-Time"] = f"{process_time:.2f}ms"
-    
+    # 安全响应头
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+
     if request.url.path != "/health":
         logger.info(
             f"{request.method} {request.url.path} - "
             f"Status: {response.status_code} - "
             f"Duration: {process_time:.2f}ms"
         )
-    
+
     return response
 
 
@@ -158,6 +172,25 @@ async def root():
     return {"message": "大学生智能成长平台 API"}
 
 
+@app.on_event("startup")
+def _startup_ensure_preset_hierarchy() -> None:
+    """启动时为预置课程补齐 课程→章→知识点 三层结构（幂等）."""
+    try:
+        from web.dependencies import get_db
+        from business_layer.seed_data import ensure_preset_hierarchy
+        ensure_preset_hierarchy(get_db())
+        logger.info("预置课程知识层级已就绪")
+    except Exception as e:
+        logger.warning(f"ensure_preset_hierarchy 未执行: {e}")
+
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("web.main:app", host="0.0.0.0", port=8000, reload=True)
+    # 默认仅监听本机；设置 HOST=0.0.0.0 可对外暴露
+    # reload 仅在 DEV=1 时开启，避免生产环境文件监听热重载
+    uvicorn.run(
+        "web.main:app",
+        host=os.environ.get("HOST", "127.0.0.1"),
+        port=int(os.environ.get("PORT", "8000")),
+        reload=os.environ.get("DEV", "") == "1",
+    )

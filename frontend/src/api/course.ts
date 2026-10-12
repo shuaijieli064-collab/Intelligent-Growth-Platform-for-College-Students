@@ -35,6 +35,16 @@ export const createCourse = async (data: CourseCreate): Promise<Course> => {
   return (response as unknown as ApiResponse<Course>).data!
 }
 
-export const deleteCourse = async (courseId: number): Promise<void> => {
-  await apiClient.delete(`/api/courses/${courseId}`)
+export const deleteCourse = async (courseId: number): Promise<string> => {
+  const response = await apiClient.delete<ApiResponse<{ course_id: number }>>(
+    `/api/courses/${courseId}`
+  )
+  return (response as unknown as ApiResponse<unknown>).message || '课程删除成功'
+}
+
+export const restoreDefaultCourses = async (): Promise<string> => {
+  const response = await apiClient.post<ApiResponse<{ added: number }>>(
+    '/api/courses/restore-defaults'
+  )
+  return (response as unknown as ApiResponse<unknown>).message || '已恢复默认课程'
 }

@@ -34,7 +34,9 @@ DEFAULT_DB_CONFIG = {
     "host": "localhost",
     "port": 3306,
     "user": "root",
-    "password": "lsjhappy123..",
+    # 出于安全不再内置数据库口令：
+    # 请通过环境变量 DB_PASSWORD / DATABASE_URL，或本地 config.json 提供
+    "password": "",
     "database": "student_growth_platform",
     "charset": "utf8mb4",
 }
@@ -65,6 +67,12 @@ LLM_PROVIDERS: dict[str, dict[str, str]] = {
         "api_url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
         "model": "qwen-turbo",
         "register_url": "https://dashscope.console.aliyun.com/",
+    },
+    "magic_tower": {
+        "name": "魔搭 ModelScope",
+        "api_url": "https://api-inference.modelscope.cn/v1/chat/completions",
+        "model": "deepseek-ai/DeepSeek-V4-Flash-0731",
+        "register_url": "https://www.modelscope.cn/my/overview",
     },
     "custom": {
         "name": "自定义 (OpenAI兼容)",
@@ -224,14 +232,37 @@ def save_runtime_config(
     return target_path
 
 
+def _load_existing_db_config() -> dict[str, Any]:
+    """读取当前 config.json 中的 db_config，用于保存时保留而不覆盖."""
+    for config_path in _candidate_config_paths():
+        if not config_path.exists():
+            continue
+        try:
+            with config_path.open("r", encoding="utf-8") as f:
+                raw = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            continue
+        if isinstance(raw, dict) and isinstance(raw.get("db_config"), dict):
+            return _merge_dict(DEFAULT_DB_CONFIG, raw["db_config"])
+        break
+    return deepcopy(DEFAULT_DB_CONFIG)
+
+
 def save_llm_config_to_json(provider: str, api_key: str, api_url: str = "", model: str = "") -> Path:
-    """保存 LLM 配置到 config.json（API Key 自动加密）. """
+    """保存 LLM 配置到 config.json（API Key 自动加密）.
+
+    仅更新 llm_config，保留现有 db_config，避免把数据库连接配置覆盖为默认值。
+    """
     llm_cfg = {"provider": provider, "api_key": api_key}
     if api_url:
         llm_cfg["api_url"] = api_url
     if model:
         llm_cfg["model"] = model
-    return save_runtime_config(DEFAULT_DB_CONFIG, llm_cfg, _module_dir() / CONFIG_FILENAME)
+    db_cfg = _load_existing_db_config()
+    # 环境变量注入的数据库配置不落盘（避免云部署凭据写入文件）
+    if os.environ.get("DATABASE_URL") or os.environ.get("DB_PASSWORD"):
+        db_cfg = deepcopy(DEFAULT_DB_CONFIG)
+    return save_runtime_config(db_cfg, llm_cfg, _module_dir() / CONFIG_FILENAME)
 
 
 def reload_llm_config() -> dict[str, Any]:

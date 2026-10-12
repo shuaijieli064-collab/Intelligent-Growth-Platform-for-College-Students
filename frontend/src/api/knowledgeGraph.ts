@@ -6,6 +6,10 @@ export interface KnowledgeNode {
   kp_name: string
   mastery_level: number
   mastery_status: string
+  /** true = 当前学生自建（可编辑）；false/缺省 = 系统预置（只读） */
+  is_owner?: boolean
+  /** 节点类型：course=课程根 / chapter=章 / kp=知识点叶子 */
+  node_type?: string
 }
 
 export interface KnowledgeEdge {

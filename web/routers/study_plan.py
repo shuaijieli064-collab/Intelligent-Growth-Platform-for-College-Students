@@ -70,7 +70,10 @@ def generate_plan(
     db: DatabaseManager = Depends(get_db),
 ):
     generator = StudyPlanGenerator(db, student_id)
-    plan_id = generator.generate(req.subject, req.course_id, req.goal_score, req.exam_date)
+    plan_id = generator.generate(
+        req.subject, req.course_id, req.goal_score, req.exam_date,
+        daily_minutes=req.daily_minutes,
+    )
 
     dao = StudyPlanDAO(db)
     plans = dao.get_by_student(student_id)
@@ -156,7 +159,16 @@ def complete_next_task(
     next_index = next((i for i, t in enumerate(tasks) if not t.get("done")), -1)
 
     if next_index == -1:
-        return ApiResponse(data={"completed_all": True}, message="所有任务已完成")
+        completed = sum(1 for t in tasks if t.get("done"))
+        progress = round((completed / len(tasks)) * 100, 1) if tasks else 0
+        return ApiResponse(
+            data={
+                "completed_all": True,
+                "task_index": -1,
+                "progress": progress,
+            },
+            message="所有任务已完成",
+        )
 
     tasks[next_index]["done"] = True
 

@@ -7,18 +7,23 @@ from pathlib import Path
 
 import pymysql
 
-# ── 配置 ──────────────────────────────────────────────────────
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from config import DB_CONFIG as _APP_DB_CONFIG  # noqa: E402
+
+# ── 配置（来自 config.json / 环境变量，不内置默认口令） ──────
 DB_CONFIG = {
-    "host": "localhost",
-    "port": 3306,
-    "user": "root",
-    "password": "lsjhappy123..",
-    "charset": "utf8mb4",
+    "host": _APP_DB_CONFIG.get("host", "localhost"),
+    "port": int(_APP_DB_CONFIG.get("port", 3306)),
+    "user": _APP_DB_CONFIG.get("user", "root"),
+    "password": _APP_DB_CONFIG.get("password", ""),
+    "charset": _APP_DB_CONFIG.get("charset", "utf8mb4"),
 }
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
 SQL_DIR = PROJECT_ROOT / "sql"
-SQL_FILES = ["schema.sql", "v2_extend.sql", "v3_health_extend.sql"]
+SQL_FILES = ["schema.sql", "v2_extend.sql", "v3_health_extend.sql", "v4_auth_resource.sql", "v5_ownership.sql", "v6_node_type.sql"]
+
 
 
 def _parse_sql(content: str) -> list[str]:

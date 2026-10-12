@@ -35,7 +35,19 @@ class AICoach:
             model=model_name or llm_cfg["model"],
         )
 
+    def _load_history_from_db(self) -> None:
+        """Restore conversation context from DB when in-memory history is empty."""
+        rows = self._dao.get_session_history(self._student_id, self._session_id)
+        self._history = [
+            {"role": r["role"], "content": r["message"]}
+            for r in rows
+            if r.get("role") in ("user", "assistant") and r.get("message")
+        ]
+
     def chat(self, message: str) -> str:
+        if not self._history:
+            self._load_history_from_db()
+
         self._dao.save_message(
             self._student_id, self._session_id, "user", message,
         )

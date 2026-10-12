@@ -1,6 +1,6 @@
 -- ============================================================
 -- 大学生智能成长平台 - PostgreSQL Schema (Supabase)
--- 由 MySQL schema.sql + v2_extend.sql + v3_health_extend.sql 转换而来
+-- 由 MySQL schema.sql + v2_extend.sql + v3_health_extend.sql + v4_auth_resource.sql 转换而来
 -- 在 Supabase SQL Editor 中执行此文件即可
 -- ============================================================
 
@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS course (
     semester               VARCHAR(20)  NOT NULL,
     is_compulsory          BOOLEAN      DEFAULT TRUE,
     prerequisite_course_id INT          DEFAULT NULL,
+    created_by             INT          DEFAULT NULL,
     FOREIGN KEY (prerequisite_course_id) REFERENCES course(course_id)
         ON DELETE SET NULL ON UPDATE CASCADE
 );
@@ -126,6 +127,8 @@ CREATE TABLE IF NOT EXISTS knowledge_point (
     parent_kp_id INT DEFAULT NULL,
     difficulty   SMALLINT DEFAULT 1,
     weight       NUMERIC(3,2) DEFAULT 1.0,
+    created_by   INT DEFAULT NULL,
+    node_type    VARCHAR(10) NOT NULL DEFAULT 'kp',
     FOREIGN KEY (course_id)   REFERENCES course(course_id)
         ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (parent_kp_id) REFERENCES knowledge_point(kp_id)
@@ -134,6 +137,7 @@ CREATE TABLE IF NOT EXISTS knowledge_point (
 
 COMMENT ON TABLE knowledge_point IS '知识点表(知识图谱节点)';
 COMMENT ON COLUMN knowledge_point.difficulty IS '难度(1-5)';
+COMMENT ON COLUMN knowledge_point.node_type IS '节点类型: course/chapter/kp';
 
 -- -----------------------------------------------------------
 -- 7. 知识点掌握度表 (学生-知识点 边)
@@ -230,6 +234,7 @@ CREATE TABLE IF NOT EXISTS resource_recommendation (
     id            SERIAL PRIMARY KEY,
     student_id    INT NOT NULL,
     kp_id         INT DEFAULT NULL,
+    course_id     INT DEFAULT NULL,
     resource_type VARCHAR(30) NOT NULL,
     title         VARCHAR(200) NOT NULL,
     url           VARCHAR(500),
@@ -237,7 +242,8 @@ CREATE TABLE IF NOT EXISTS resource_recommendation (
     is_completed  BOOLEAN DEFAULT FALSE,
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE,
-    FOREIGN KEY (kp_id) REFERENCES knowledge_point(kp_id) ON DELETE SET NULL
+    FOREIGN KEY (kp_id) REFERENCES knowledge_point(kp_id) ON DELETE SET NULL,
+    FOREIGN KEY (course_id) REFERENCES course(course_id) ON DELETE SET NULL
 );
 
 COMMENT ON TABLE resource_recommendation IS '资源推荐表';

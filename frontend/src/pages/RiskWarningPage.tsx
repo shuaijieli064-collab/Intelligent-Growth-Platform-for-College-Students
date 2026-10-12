@@ -36,12 +36,24 @@ function formatDate(dateStr?: string): string {
   })
 }
 
+function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
+  return (
+    <div className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-lg shadow-lg animate-fade-in ${
+      type === 'success' ? 'bg-success text-white' : 'bg-danger text-white'
+    }`}>
+      {message}
+      <button type="button" className="ml-3 opacity-80 hover:opacity-100" onClick={onClose}>×</button>
+    </div>
+  )
+}
+
 export default function RiskWarningPage() {
   const [alerts, setAlerts] = useState<RiskAlert[]>([])
   const [filter, setFilter] = useState<AlertFilter>('all')
   const [selectedIds, setSelectedIds] = useState<number[]>([])
   const [loading, setLoading] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   const fetchAlerts = async () => {
     setLoading(true)
@@ -67,8 +79,11 @@ export default function RiskWarningPage() {
         a.alert_id === alertId ? { ...a, is_resolved: true } : a
       ))
       setSelectedIds(prev => prev.filter(id => id !== alertId))
+      setToast({ message: '告警已标记为已处理', type: 'success' })
     } catch (error) {
       console.error('Failed to resolve alert:', error)
+      const detail = (error as { message?: string })?.message
+      setToast({ message: detail || '处理失败，请稍后重试', type: 'error' })
     } finally {
       setActionLoading(false)
     }
@@ -82,8 +97,11 @@ export default function RiskWarningPage() {
       await deleteAlert(alertId)
       setAlerts(prev => prev.filter(a => a.alert_id !== alertId))
       setSelectedIds(prev => prev.filter(id => id !== alertId))
+      setToast({ message: '告警已删除', type: 'success' })
     } catch (error) {
       console.error('Failed to delete alert:', error)
+      const detail = (error as { message?: string })?.message
+      setToast({ message: detail || '删除失败，请稍后重试', type: 'error' })
     } finally {
       setActionLoading(false)
     }
@@ -98,8 +116,11 @@ export default function RiskWarningPage() {
       await batchDeleteAlerts(selectedIds)
       setAlerts(prev => prev.filter(a => !selectedIds.includes(a.alert_id!)))
       setSelectedIds([])
+      setToast({ message: '批量删除成功', type: 'success' })
     } catch (error) {
       console.error('Failed to batch delete:', error)
+      const detail = (error as { message?: string })?.message
+      setToast({ message: detail || '批量删除失败，请稍后重试', type: 'error' })
     } finally {
       setActionLoading(false)
     }
@@ -127,6 +148,7 @@ export default function RiskWarningPage() {
 
   return (
     <div className="space-y-6">
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       <div>
         <h1 className="text-2xl font-bold text-text-primary flex items-center gap-3">
           <span className="text-3xl">⚠️</span>

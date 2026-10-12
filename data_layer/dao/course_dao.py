@@ -21,6 +21,13 @@ class CourseDAO:
         )
         return Course(**rows[0]) if rows else None
 
+    def get_by_name(self, course_name: str) -> Optional[Course]:
+        rows = self._db.execute_query(
+            "SELECT * FROM course WHERE course_name = %s ORDER BY course_id LIMIT 1",
+            (course_name,),
+        )
+        return Course(**rows[0]) if rows else None
+
     def get_all(self) -> list[Course]:
         rows = self._db.execute_query("SELECT * FROM course ORDER BY course_id")
         return [Course(**r) for r in rows]
@@ -49,24 +56,25 @@ class CourseDAO:
 
     def create(self, c: Course) -> int:
         sql = ("INSERT INTO course (course_code, course_name, credit, semester, is_compulsory, "
-               "prerequisite_course_id) VALUES (%s, %s, %s, %s, %s, %s)")
+               "prerequisite_course_id, created_by) VALUES (%s, %s, %s, %s, %s, %s, %s)")
         if self._db._db_type == "postgres":
             sql += " RETURNING course_id"
         return self._db.execute_insert(
             sql,
             (c.course_code, c.course_name, c.credit, c.semester,
-             c.is_compulsory, c.prerequisite_course_id),
+             c.is_compulsory, c.prerequisite_course_id, c.created_by),
         )
 
     def create_with_defaults(self, code: str, name: str, credit: float,
-                             semester: str, is_compulsory: bool) -> int:
-        sql = ("INSERT INTO course (course_code, course_name, credit, semester, is_compulsory) "
-               "VALUES (%s, %s, %s, %s, %s)")
+                             semester: str, is_compulsory: bool,
+                             created_by: Optional[int] = None) -> int:
+        sql = ("INSERT INTO course (course_code, course_name, credit, semester, is_compulsory, "
+               "created_by) VALUES (%s, %s, %s, %s, %s, %s)")
         if self._db._db_type == "postgres":
             sql += " RETURNING course_id"
         return self._db.execute_insert(
             sql,
-            (code, name, credit, semester, is_compulsory),
+            (code, name, credit, semester, is_compulsory, created_by),
         )
 
     def delete(self, course_id: int) -> bool:
@@ -87,6 +95,13 @@ class StudentCourseDAO:
             sql,
             (student_id, course_id),
         )
+
+    def unenroll(self, student_id: int, course_id: int) -> bool:
+        """移除自己的选课记录（连带该课程的成绩行），不影响课程本身."""
+        return self._db.execute_update(
+            "DELETE FROM student_course WHERE student_id = %s AND course_id = %s",
+            (student_id, course_id),
+        ) > 0
 
     def update_scores(self, student_id: int, course_id: int,
                       usual: Optional[float] = None, midterm: Optional[float] = None,
@@ -123,9 +138,10 @@ class StudentCourseDAO:
         )
 
     def delete_score(self, sc_id: int) -> bool:
-        """Delete a student_course record by its PK id."""
+        """清空成绩分数（保留选课行，课程不从“我的课程”中消失）."""
         return self._db.execute_update(
-            "DELETE FROM student_course WHERE id = %s", (sc_id,),
+            "UPDATE student_course SET usual_score=NULL, midterm_score=NULL, "
+            "final_score=NULL, predicted_final=NULL WHERE id = %s", (sc_id,),
         ) > 0
 
     def get_training_data(self, course_id: Optional[int] = None) -> pd.DataFrame:

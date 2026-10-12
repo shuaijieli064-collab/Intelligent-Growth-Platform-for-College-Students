@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Tabs, Tab } from '@/components/ui/Tabs'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -38,6 +39,7 @@ import {
   getCourses,
   createCourse,
   deleteCourse,
+  restoreDefaultCourses,
   type Course,
 } from '@/api/course'
 import { getStudentMe, updateStudentMe } from '@/api/student'
@@ -180,7 +182,7 @@ function StudyRecordTab() {
       fetchData()
     } catch (err) {
       console.error('Failed to delete record:', err)
-      setToast({ message: '删除失败', type: 'error' })
+      setToast({ message: (err as { message?: string })?.message || '删除失败', type: 'error' })
     }
   }
 
@@ -192,7 +194,7 @@ function StudyRecordTab() {
       fetchData()
     } catch (err) {
       console.error('Failed to clear records:', err)
-      setToast({ message: '清空失败', type: 'error' })
+      setToast({ message: (err as { message?: string })?.message || '清空失败', type: 'error' })
     }
   }
 
@@ -419,7 +421,7 @@ function ScoreTab() {
       fetchData()
     } catch (err) {
       console.error('Failed to delete score:', err)
-      setToast({ message: '删除失败', type: 'error' })
+      setToast({ message: (err as { message?: string })?.message || '删除失败', type: 'error' })
     }
   }
 
@@ -629,7 +631,7 @@ function PhysicalHealthTab() {
       fetchData()
     } catch (err) {
       console.error('Failed to delete record:', err)
-      setToast({ message: '删除失败', type: 'error' })
+      setToast({ message: (err as { message?: string })?.message || '删除失败', type: 'error' })
     }
   }
 
@@ -814,7 +816,7 @@ function MentalHealthTab() {
       fetchData()
     } catch (err) {
       console.error('Failed to delete record:', err)
-      setToast({ message: '删除失败', type: 'error' })
+      setToast({ message: (err as { message?: string })?.message || '删除失败', type: 'error' })
     }
   }
 
@@ -1000,7 +1002,7 @@ function SocialHealthTab() {
       fetchData()
     } catch (err) {
       console.error('Failed to delete record:', err)
-      setToast({ message: '删除失败', type: 'error' })
+      setToast({ message: (err as { message?: string })?.message || '删除失败', type: 'error' })
     }
   }
 
@@ -1148,18 +1150,19 @@ function ProfileTab() {
     setSubmitting(true)
     try {
       await updateStudentMe({
-        name: form.name,
-        student_no: form.student_no,
+        name: form.name.trim(),
+        student_no: form.student_no.trim(),
         gender: form.gender,
         grade_level: form.grade_level,
         major: form.major,
-        enrollment_year: parseInt(form.enrollment_year),
+        enrollment_year: parseInt(form.enrollment_year) || new Date().getFullYear(),
       })
       await fetchUser()
       setToast({ message: '个人信息更新成功', type: 'success' })
     } catch (err) {
       console.error('Failed to update profile:', err)
-      setToast({ message: '更新失败，请稍后重试', type: 'error' })
+      const detail = (err as { message?: string })?.message
+      setToast({ message: detail || '更新失败，请稍后重试', type: 'error' })
     } finally {
       setSubmitting(false)
     }
@@ -1190,6 +1193,7 @@ function ProfileTab() {
                 label="学号"
                 value={form.student_no}
                 onChange={(e) => setForm({ ...form, student_no: e.target.value })}
+                maxLength={20}
                 required
               />
               <Select
@@ -1206,6 +1210,7 @@ function ProfileTab() {
                 placeholder="如：大一、大二"
                 value={form.grade_level}
                 onChange={(e) => setForm({ ...form, grade_level: e.target.value })}
+                maxLength={10}
               />
               <Input
                 label="专业"
@@ -1295,13 +1300,27 @@ function CourseTab() {
 
   const handleDelete = async (courseId: number) => {
     try {
-      await deleteCourse(courseId)
-      setToast({ message: '课程删除成功', type: 'success' })
+      const msg = await deleteCourse(courseId)
+      setToast({ message: msg, type: 'success' })
       setConfirmDelete(null)
       fetchData()
     } catch (err) {
       console.error('Failed to delete course:', err)
-      setToast({ message: '删除失败，请稍后重试', type: 'error' })
+      const detail = (err as { message?: string })?.message
+      setToast({ message: detail || '删除失败，请稍后重试', type: 'error' })
+      setConfirmDelete(null)
+    }
+  }
+
+  const handleRestoreDefaults = async () => {
+    try {
+      const msg = await restoreDefaultCourses()
+      setToast({ message: msg, type: 'success' })
+      fetchData()
+    } catch (err) {
+      console.error('Failed to restore default courses:', err)
+      const detail = (err as { message?: string })?.message
+      setToast({ message: detail || '恢复失败，请稍后重试', type: 'error' })
     }
   }
 
@@ -1312,7 +1331,7 @@ function CourseTab() {
       <ConfirmDialog
         open={confirmDelete !== null}
         title="确认删除"
-        message="确定要删除这门课程吗？相关的成绩记录也会被删除，此操作不可恢复。"
+        message="确定要删除这门课程吗？你与该课程的成绩记录会被删除，此操作不可恢复；系统预置课程会从列表移除（可用“恢复默认课程”找回）。"
         onConfirm={() => confirmDelete !== null && handleDelete(confirmDelete)}
         onCancel={() => setConfirmDelete(null)}
       />
@@ -1372,8 +1391,15 @@ function CourseTab() {
 
       <Card>
         <CardHeader>
-          <CardTitle>课程列表</CardTitle>
-          <CardDescription>所有已添加的课程</CardDescription>
+          <div className="flex items-center justify-between w-full gap-3">
+            <div>
+              <CardTitle>课程列表</CardTitle>
+              <CardDescription>所有已添加的课程；预置课程可移出列表后一键恢复</CardDescription>
+            </div>
+            <Button variant="secondary" size="sm" onClick={handleRestoreDefaults}>
+              恢复默认课程
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -1428,7 +1454,13 @@ function CourseTab() {
   )
 }
 
+const VALID_TABS = ['study', 'scores', 'physical', 'mental', 'social', 'profile', 'courses']
+
 export default function DataEntryPage() {
+  const [searchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const initialTab = tabParam && VALID_TABS.includes(tabParam) ? tabParam : 'study'
+
   return (
     <div className="space-y-6">
       <div>
@@ -1440,7 +1472,7 @@ export default function DataEntryPage() {
 
       <Card>
         <CardContent className="pt-6">
-          <Tabs defaultValue="study">
+          <Tabs key={initialTab} defaultValue={initialTab}>
             <Tab value="study" label="学习记录">
               <StudyRecordTab />
             </Tab>

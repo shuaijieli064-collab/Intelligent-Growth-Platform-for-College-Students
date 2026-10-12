@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
-import { Card, CardContent, CardHeader } from '@/components/ui/Card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import {
   sendMessage,
   sendQuickAction,
   createNewSession,
+  getSessions,
+  getMessages,
   type CoachMessage,
+  type CoachSession,
   type QuickActionType,
 } from '@/api/aiCoach'
 
@@ -18,12 +21,19 @@ const quickActions: { type: QuickActionType; label: string; icon: string }[] = [
   { type: 'daily_motivation', label: '每日激励', icon: '✨' },
 ]
 
+const GREETING = '你好！我是你的AI学习教练。有什么可以帮助你的吗？你可以问我学习建议、情绪疏导、生涯规划等问题。'
+
+function greetingFor(sessionId: string): CoachMessage {
+  return { session_id: sessionId, role: 'assistant', message: GREETING, tokens_used: 0 }
+}
+
 export default function AICoachPage() {
   const [messages, setMessages] = useState<CoachMessage[]>([])
   const [inputValue, setInputValue] = useState('')
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [quickLoading, setQuickLoading] = useState(false)
+  const [sessions, setSessions] = useState<CoachSession[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -34,24 +44,40 @@ export default function AICoachPage() {
     scrollToBottom()
   }, [messages])
 
+  const refreshSessions = async () => {
+    try {
+      setSessions(await getSessions())
+    } catch (error) {
+      console.error('Failed to load sessions:', error)
+    }
+  }
+
   useEffect(() => {
     const initSession = async () => {
       try {
         const result = await createNewSession()
         setSessionId(result.session_id)
-        setMessages([{
-          session_id: result.session_id,
-          role: 'assistant',
-          message: '你好！我是你的AI学习教练。有什么可以帮助你的吗？你可以问我学习建议、情绪疏导、生涯规划等问题。',
-          tokens_used: 0,
-        }])
+        setMessages([greetingFor(result.session_id)])
+        refreshSessions()
       } catch (error) {
         console.error('Failed to create session:', error)
+        setMessages([greetingFor('')])
       }
     }
 
     initSession()
   }, [])
+
+  const loadSession = async (sid: string) => {
+    if (sid === sessionId || loading || quickLoading) return
+    try {
+      const msgs = await getMessages(sid)
+      setSessionId(sid)
+      setMessages(msgs.length ? msgs : [greetingFor(sid)])
+    } catch (error) {
+      console.error('Failed to load session messages:', error)
+    }
+  }
 
   const handleSend = async () => {
     if (!inputValue.trim() || loading) return
@@ -74,6 +100,7 @@ export default function AICoachPage() {
         setSessionId(reply.session_id)
       }
       setMessages(prev => [...prev, reply])
+      refreshSessions()
     } catch (error) {
       console.error('Failed to send message:', error)
       setMessages(prev => [...prev, {
@@ -92,13 +119,20 @@ export default function AICoachPage() {
 
     setQuickLoading(true)
     try {
-      const reply = await sendQuickAction(actionType)
+      const reply = await sendQuickAction(actionType, sessionId)
       if (reply.session_id) {
         setSessionId(reply.session_id)
       }
       setMessages(prev => [...prev, reply])
+      refreshSessions()
     } catch (error) {
       console.error('Quick action failed:', error)
+      setMessages(prev => [...prev, {
+        session_id: sessionId || '',
+        role: 'assistant',
+        message: '快捷操作失败，请稍后再试。',
+        tokens_used: 0,
+      }])
     } finally {
       setQuickLoading(false)
     }
@@ -110,14 +144,16 @@ export default function AICoachPage() {
     try {
       const result = await createNewSession()
       setSessionId(result.session_id)
-      setMessages([{
-        session_id: result.session_id,
-        role: 'assistant',
-        message: '你好！我是你的AI学习教练。有什么可以帮助你的吗？',
-        tokens_used: 0,
-      }])
+      setMessages([greetingFor(result.session_id)])
+      refreshSessions()
     } catch (error) {
       console.error('Failed to create session:', error)
+      setMessages(prev => [...prev, {
+        session_id: sessionId || '',
+        role: 'assistant',
+        message: '新建会话失败，请稍后再试。',
+        tokens_used: 0,
+      }])
     }
   }
 
@@ -126,6 +162,12 @@ export default function AICoachPage() {
       e.preventDefault()
       handleSend()
     }
+  }
+
+  const formatSessionTime = (s: CoachSession) => {
+    if (!s.started_at) return `会话 · ${s.msg_count} 条`
+    const d = new Date(s.started_at)
+    return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} · ${s.msg_count} 条`
   }
 
   return (
@@ -143,7 +185,36 @@ export default function AICoachPage() {
         </Button>
       </div>
 
-      <Card className="flex-1 flex flex-col h-full">
+      <div className="flex gap-6 h-[calc(100%-72px)]">
+        <aside className="w-56 shrink-0 hidden md:block">
+          <Card className="h-full flex flex-col">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-text-muted">历史会话</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-y-auto p-2 space-y-1">
+              {sessions.length === 0 ? (
+                <p className="text-xs text-text-muted px-2 py-3">暂无历史会话</p>
+              ) : (
+                sessions.map(s => (
+                  <button
+                    key={s.session_id}
+                    type="button"
+                    onClick={() => loadSession(s.session_id)}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${
+                      s.session_id === sessionId
+                        ? 'bg-accent-primary/10 text-accent-primary font-medium'
+                        : 'text-text-secondary hover:bg-bg-hover'
+                    }`}
+                  >
+                    {formatSessionTime(s)}
+                  </button>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </aside>
+
+        <Card className="flex-1 flex flex-col h-full min-w-0">
         <CardHeader className="pb-4">
           <div className="flex flex-wrap gap-2">
             {quickActions.map(action => (
@@ -219,7 +290,8 @@ export default function AICoachPage() {
             </div>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   )
 }

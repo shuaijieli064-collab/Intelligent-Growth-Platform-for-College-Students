@@ -22,6 +22,12 @@ class StudyRecordDAO:
              task_completed, focus_score, notes),
         )
 
+    def get_by_id(self, record_id: int) -> Optional[dict]:
+        rows = self._db.execute_query(
+            "SELECT * FROM study_record WHERE record_id = %s", (record_id,)
+        )
+        return rows[0] if rows else None
+
     def get_by_student(self, student_id: int, days: int = 30) -> list[dict]:
         cutoff = date.today() - timedelta(days=days)
         return self._db.execute_query(

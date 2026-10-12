@@ -214,3 +214,13 @@ class GradePredictWidget(QWidget):
             idx = self._course_combo.findData(current_cid)
             if idx >= 0:
                 self._course_combo.setCurrentIndex(idx)
+        # 重建预测模型并重绘图表，避免用旧学生的模型/数据做预测
+        self._predictor = GradePredictorV2(self._db)
+        self._predict_btn.setEnabled(False)
+        self._metrics_label.setText("")
+        self._result_label.setText("请先训练模型，然后输入成绩进行预测")
+        self._result_label.setStyleSheet(
+            "font-size: 28px; color: #d97706; padding: 12px; "
+            "background-color: rgba(217,119,6,0.08); border-radius: 4px;"
+        )
+        self._draw_history_chart()

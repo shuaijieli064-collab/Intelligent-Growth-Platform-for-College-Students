@@ -660,7 +660,9 @@ class DataEntryWidget(QWidget):
             is_compulsory = self._course_compulsory.currentText() == "必修"
 
             cid = self._course_dao.create_with_defaults(code, name, credit, semester, is_compulsory)
-            self._course_msg.setText(f"✅ 课程已添加 (ID:{cid})")
+            # 建课后立即为当前学生建立选课关系，否则该课程不会出现在各页课程下拉中
+            self._score_dao.enroll(self._student_id, cid)
+            self._course_msg.setText(f"✅ 课程已添加并选课 (ID:{cid})")
             self._course_code_edit.clear()
             self._course_name_edit.clear()
             self._load_course_list()
@@ -694,10 +696,27 @@ class DataEntryWidget(QWidget):
         except Exception:
             pass
 
+    def _load_course_combos(self) -> None:
+        """Refill course dropdowns with the current student's enrollments."""
+        for combo, with_placeholder in ((self._study_course, True), (self._score_course, False)):
+            combo.blockSignals(True)
+            current = combo.currentData()
+            combo.clear()
+            if with_placeholder:
+                combo.addItem("（无特定课程）", None)
+            for c in self._course_dao.get_by_student(self._student_id):
+                combo.addItem(c.course_name, c.course_id)
+            idx = combo.findData(current)
+            if idx >= 0:
+                combo.setCurrentIndex(idx)
+            combo.blockSignals(False)
+
     def refresh(self) -> None:
         self._load_student_info()
         self._load_record_list()
+        self._load_score_history()
         self._load_physical_history()
         self._load_mental_history()
         self._load_social_history()
         self._load_course_list()
+        self._load_course_combos()

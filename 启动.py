@@ -19,8 +19,28 @@ PROJECT_DIR = Path(__file__).resolve().parent
 MYSQL_PORT = 3306
 MYSQL_DATADIR = Path(os.environ.get("MYSQL_DATADIR", Path.home() / "mysql_data"))
 MYSQL_USER = os.environ.get("MYSQL_USER", "root")
-MYSQL_PASSWORD = os.environ.get("MYSQL_PASSWORD", "lsjhappy123..")
 MYSQL_DATABASE = "student_growth_platform"
+
+
+def _db_password() -> str:
+    """读取数据库口令：环境变量 > config.json > 空（不内置默认口令）."""
+    env = os.environ.get("MYSQL_PASSWORD")
+    if env is not None:
+        return env
+    try:
+        import json
+        cfg_path = PROJECT_DIR / "config.json"
+        if cfg_path.exists():
+            data = json.loads(cfg_path.read_text(encoding="utf-8"))
+            pwd = (data.get("db_config") or {}).get("password")
+            if pwd:
+                return pwd
+    except Exception:
+        pass
+    return ""
+
+
+MYSQL_PASSWORD = _db_password()
 
 
 def find_mysqld() -> Path | None:
@@ -157,6 +177,7 @@ def ensure_database() -> bool:
                 [sys.executable, str(mock_script)],
                 capture_output=True, text=True, cwd=str(PROJECT_DIR),
                 env={**os.environ, "PYTHONIOENCODING": "utf-8"},
+                encoding="utf-8", errors="replace",
             )
             if result.returncode != 0:
                 print(f"  演示数据生成失败（可忽略）:\n{result.stderr[:200]}")

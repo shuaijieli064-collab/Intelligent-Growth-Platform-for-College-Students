@@ -27,6 +27,7 @@ export interface GeneratePlanRequest {
   course_id: number
   goal_score: number
   exam_date: string
+  daily_minutes: number
 }
 
 export const getStudyPlan = async (): Promise<StudyPlan | null> => {

@@ -48,17 +48,26 @@ function DimensionCard({
   icon,
   score,
   description,
+  tint,
 }: {
   title: string
   icon: string
   score: number
   description: string
+  tint: 'accent' | 'info' | 'success' | 'warning'
 }) {
+  const tintClasses = {
+    accent: 'bg-accent-light',
+    info: 'bg-info-light',
+    success: 'bg-success-light',
+    warning: 'bg-warning-light',
+  }
+
   return (
     <Card hoverable>
       <CardContent className="pt-6">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-accent-light flex items-center justify-center text-2xl flex-shrink-0">
+          <div className={`w-12 h-12 rounded-xl ${tintClasses[tint]} flex items-center justify-center text-2xl flex-shrink-0`}>
             {icon}
           </div>
           <div className="flex-1">
@@ -203,7 +212,7 @@ export default function DashboardPage() {
             <Card hoverable>
               <CardContent className="pt-6">
                 <p className="text-sm text-text-muted font-medium uppercase tracking-wide">活跃告警</p>
-                <p className={`text-4xl font-bold mt-2 ${data.active_alert_count > 0 ? 'text-danger' : 'text-text-primary'}`}>
+                <p className={`text-4xl font-bold mt-2 ${data.active_alert_count > 0 ? 'text-danger' : 'text-success'}`}>
                   {data.active_alert_count}
                 </p>
                 <p className="text-sm text-text-muted mt-3">
@@ -255,24 +264,28 @@ export default function DashboardPage() {
                 icon="📚"
                 score={data.dimensions.academic}
                 description="基于学习成绩、学习进度等综合评估"
+                tint="info"
               />
               <DimensionCard
                 title="身体健康"
                 icon="💪"
                 score={data.dimensions.physical}
                 description="基于运动、睡眠、作息等综合评估"
+                tint="success"
               />
               <DimensionCard
                 title="心理健康"
                 icon="💛"
                 score={data.dimensions.mental}
                 description="基于情绪、压力、专注度等综合评估"
+                tint="warning"
               />
               <DimensionCard
                 title="社交健康"
                 icon="👥"
                 score={data.dimensions.social}
                 description="基于社交活动、人际关系等综合评估"
+                tint="accent"
               />
             </div>
           ) : (

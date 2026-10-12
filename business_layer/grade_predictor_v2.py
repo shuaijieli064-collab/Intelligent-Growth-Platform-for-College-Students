@@ -64,13 +64,17 @@ class GradePredictorV2:
         X_scaled = self._scaler.transform(X)
         point = self._model.predict(X_scaled)[0]
 
+        # 残差标准差为 0（完全拟合）时用最小尺度，避免置信区间退化为 NaN
+        std = float(getattr(self, "_residual_std", 5.0) or 0.0)
+        scale = std if std > 1e-6 else 1.0
+
         # 95% 置信区间
-        ci_lower = point - 1.96 * getattr(self, "_residual_std", 5)
-        ci_upper = point + 1.96 * getattr(self, "_residual_std", 5)
+        ci_lower = point - 1.96 * scale
+        ci_upper = point + 1.96 * scale
 
         # 达标概率 (以60分为及格线)
         from scipy.stats import norm
-        pass_prob = 1 - norm.cdf(60, loc=point, scale=getattr(self, "_residual_std", 5))
+        pass_prob = 1 - norm.cdf(60, loc=point, scale=scale)
 
         return {
             "predicted": round(clamp(point, 0, 100), 1),

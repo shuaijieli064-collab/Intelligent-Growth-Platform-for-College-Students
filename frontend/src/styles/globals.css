@@ -34,6 +34,19 @@
   --color-info: #2563eb;
   --color-info-light: #dbeafe;
 
+  /* RGB 分量（供 rgba(var(--xxx-rgb), alpha) 使用，自动适配主题） */
+  --bg-base-rgb: 250 249 247;
+  --bg-card-rgb: 255 255 255;
+  --bg-active-rgb: 243 241 237;
+  --border-default-rgb: 232 229 225;
+  --accent-primary-rgb: 217 119 6;
+  --text-primary-rgb: 26 26 26;
+  --text-secondary-rgb: 85 85 85;
+  --text-muted-rgb: 136 136 136;
+  --danger-rgb: 220 38 38;
+  --success-rgb: 5 150 105;
+  --warning-rgb: 217 119 6;
+
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
@@ -51,13 +64,13 @@
   --color-bg-active: #252629;
 
   --color-text-primary: #e4e4e4;
-  --color-text-secondary: #aaaaaa;
-  --color-text-muted: #777777;
+  --color-text-secondary: #b4b4b4;
+  --color-text-muted: #9a9aa3;
   --color-text-inverse: #1a1a1a;
 
-  --color-border-default: #2a2b2e;
-  --color-border-focus: #3d3e42;
-  --color-border-hover: #3d3e42;
+  --color-border-default: #3a3c41;
+  --color-border-focus: #4a4d54;
+  --color-border-hover: #4a4d54;
 
   --color-accent-primary: #f0c070;
   --color-accent-hover: #f59b1e;
@@ -73,6 +86,19 @@
   --color-danger-light: #4c0519;
   --color-info: #3b82f6;
   --color-info-light: #1e3a5f;
+
+  /* RGB 分量（深色主题） */
+  --bg-base-rgb: 26 27 30;
+  --bg-card-rgb: 33 34 38;
+  --bg-active-rgb: 37 38 41;
+  --border-default-rgb: 58 60 65;
+  --accent-primary-rgb: 240 192 112;
+  --text-primary-rgb: 228 228 228;
+  --text-secondary-rgb: 180 180 180;
+  --text-muted-rgb: 154 154 163;
+  --danger-rgb: 244 63 94;
+  --success-rgb: 16 185 129;
+  --warning-rgb: 245 158 11;
 }
 
 @layer base {

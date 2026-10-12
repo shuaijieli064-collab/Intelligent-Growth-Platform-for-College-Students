@@ -14,7 +14,7 @@ export function useEchartsTheme() {
       tooltip: {
         trigger: 'axis',
         backgroundColor: isDark ? 'rgba(33, 34, 38, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-        borderColor: isDark ? 'rgba(61, 62, 66, 0.5)' : 'rgba(232, 229, 225, 0.5)',
+        borderColor: isDark ? 'rgba(90, 95, 105, 0.6)' : 'rgba(232, 229, 225, 0.5)',
         borderWidth: 1,
         textStyle: {
           color: isDark ? '#e4e4e4' : '#1a1a1a',
@@ -22,7 +22,7 @@ export function useEchartsTheme() {
       },
       legend: {
         textStyle: {
-          color: isDark ? '#aaaaaa' : '#555555',
+          color: isDark ? '#c4c4c4' : '#555555',
         },
       },
       grid: {
@@ -35,11 +35,11 @@ export function useEchartsTheme() {
       xAxis: {
         axisLine: {
           lineStyle: {
-            color: isDark ? 'rgba(61, 62, 66, 0.5)' : 'rgba(232, 229, 225, 0.5)',
+            color: isDark ? 'rgba(140, 145, 155, 0.55)' : 'rgba(232, 229, 225, 0.5)',
           },
         },
         axisLabel: {
-          color: isDark ? '#777777' : '#888888',
+          color: isDark ? '#9aa0a6' : '#888888',
         },
         splitLine: {
           show: false,
@@ -48,15 +48,15 @@ export function useEchartsTheme() {
       yAxis: {
         axisLine: {
           lineStyle: {
-            color: isDark ? 'rgba(61, 62, 66, 0.5)' : 'rgba(232, 229, 225, 0.5)',
+            color: isDark ? 'rgba(140, 145, 155, 0.55)' : 'rgba(232, 229, 225, 0.5)',
           },
         },
         axisLabel: {
-          color: isDark ? '#777777' : '#888888',
+          color: isDark ? '#9aa0a6' : '#888888',
         },
         splitLine: {
           lineStyle: {
-            color: isDark ? 'rgba(61, 62, 66, 0.3)' : 'rgba(232, 229, 225, 0.3)',
+            color: isDark ? 'rgba(255, 255, 255, 0.09)' : 'rgba(232, 229, 225, 0.3)',
           },
         },
       },

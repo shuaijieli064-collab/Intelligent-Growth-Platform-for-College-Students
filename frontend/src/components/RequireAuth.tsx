@@ -7,9 +7,10 @@ interface RequireAuthProps {
 }
 
 export function RequireAuth({ children }: RequireAuthProps) {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  // 以 token 为准（isAuthenticated 由 token 派生），防止篡改布尔标志绕过守卫
+  const token = useAuthStore((state) => state.token)
 
-  if (!isAuthenticated) {
+  if (!token) {
     return <Navigate to="/login" replace />
   }
 

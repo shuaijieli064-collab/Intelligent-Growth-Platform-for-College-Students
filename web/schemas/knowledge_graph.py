@@ -7,6 +7,8 @@ class KnowledgeNode(BaseModel):
     kp_name: str
     mastery_level: float = 0
     mastery_status: str = "weak"
+    is_owner: bool = False
+    node_type: str = "kp"
 
 
 class KnowledgeEdge(BaseModel):

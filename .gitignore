@@ -6,6 +6,7 @@ __pycache__/
 dist/
 build/
 *.egg
+.pytest_cache/
 
 # Environment
 .env
@@ -26,14 +27,20 @@ Thumbs.db
 # Sensitive config (contains passwords and API keys)
 config.json
 
+# Local dev secrets / upload artifacts
+.jwt_secret
+.uploads/
+
 # Database data
 mysql_data/
 *.db
 *.sqlite3
+sql/backups/
 
 # Frontend
 frontend/node_modules/
 frontend/dist/
+frontend/.env
 
 # Logs
 *.log
@@ -41,3 +48,4 @@ frontend/dist/
 # Temporary files
 *.tmp
 *.bak
+.gstack/

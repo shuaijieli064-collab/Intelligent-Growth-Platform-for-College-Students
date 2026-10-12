@@ -11,6 +11,29 @@ export interface GrowthReportListItem {
   created_at: string
 }
 
+export interface CourseScoreItem {
+  course_name: string
+  usual_score?: number | null
+  midterm_score?: number | null
+  final_score?: number | null
+}
+
+export interface DailyStudyItem {
+  date: string
+  hours: number
+}
+
+export interface WeakPointItem {
+  kp_name: string
+  mastery: number
+}
+
+export interface AlertItem {
+  type: string
+  level: string
+  message: string
+}
+
 export interface GrowthReportDetail {
   id: number
   report_type: string
@@ -28,6 +51,11 @@ export interface GrowthReportDetail {
   active_days: number
   highlights: string[]
   suggestions: string[]
+  daily_study: DailyStudyItem[]
+  courses: CourseScoreItem[]
+  avg_final_score?: number | null
+  weak_points: WeakPointItem[]
+  alerts: AlertItem[]
   created_at: string
 }
 

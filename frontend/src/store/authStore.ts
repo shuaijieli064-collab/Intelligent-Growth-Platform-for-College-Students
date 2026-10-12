@@ -22,13 +22,13 @@ export const useAuthStore = create<AuthState>()(
 
       login: async (username: string, password: string) => {
         const result = await apiLogin(username, password)
-        set({ token: result.token, isAuthenticated: true })
+        set({ token: result.token, isAuthenticated: true, user: null })
         await get().fetchUser()
       },
 
       register: async (username: string, password: string, email: string) => {
         const result = await apiRegister(username, password, email)
-        set({ token: result.token, isAuthenticated: true })
+        set({ token: result.token, isAuthenticated: true, user: null })
         await get().fetchUser()
       },
 
@@ -37,12 +37,13 @@ export const useAuthStore = create<AuthState>()(
       },
 
       fetchUser: async () => {
+        if (!get().token) return
         try {
           const userInfo = await getMe()
           set({ user: userInfo, isAuthenticated: true })
-        } catch (error) {
-          console.error('Failed to fetch user:', error)
-          set({ token: null, user: null, isAuthenticated: false })
+        } catch {
+          // 无论何种错误，都不保留可能不匹配的旧 user
+          set({ user: null, isAuthenticated: Boolean(get().token) })
         }
       },
 
@@ -52,7 +53,17 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ token: state.token, user: state.user, isAuthenticated: state.isAuthenticated }),
+      // 只持久化 token 与用户信息；isAuthenticated 由 token 派生，
+      // 避免本地篡改布尔值绕过前端路由守卫
+      partialize: (state) => ({ token: state.token, user: state.user }),
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as { token?: string | null; user?: UserInfo | null }
+        return {
+          ...current,
+          ...p,
+          isAuthenticated: Boolean(p.token),
+        }
+      },
     }
   )
 )

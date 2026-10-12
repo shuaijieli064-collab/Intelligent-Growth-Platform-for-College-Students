@@ -39,39 +39,29 @@ def seed_students() -> list[int]:
 
 
 def seed_courses() -> list[int]:
-    """插入8门课程，含先修关系，返回 course_id 列表."""
-    courses = [
-        ("CS101", "程序设计基础", 4.0, "2025-春", True, None),
-        ("CS102", "数据结构与算法", 4.0, "2025-春", True, None),
-        ("CS201", "面向对象程序设计", 3.0, "2025-春", True, None),
-        ("CS202", "数据库原理", 3.0, "2025-春", True, None),
-        ("CS301", "人工智能导论", 3.0, "2025-春", False, None),
-        ("MATH101", "高等数学(上)", 5.0, "2025-春", True, None),
-        ("MATH102", "线性代数", 3.0, "2025-春", True, None),
-        ("ENG101", "大学英语(4)", 2.0, "2025-春", True, None),
-    ]
-    # 设置先修关系（需要在插入后更新）
-    prereq_map = {
-        "CS102": "CS101",   # 数据结构 -> 程序设计基础
-        "CS201": "CS101",   # OOP -> 程序设计基础
-        "CS301": "MATH101", # AI -> 高等数学
-    }
+    """插入8门课程（与 PRESET_COURSES 名称/代码对齐，保证命中同一份知识树）."""
+    from business_layer.seed_data import PRESET_COURSES
+    demo_codes = ["CS101", "CS102", "CS201", "CS301", "CS302", "MATH101", "MATH201", "ENG101"]
+    code_to_data = {c["course_code"]: c for c in PRESET_COURSES}
 
     ids = {}
-    for code, name, credit, sem, comp, prereq in courses:
+    for code in demo_codes:
+        data = code_to_data[code]
         cid = db.execute_insert(
             "INSERT INTO course (course_code, course_name, credit, semester, is_compulsory, "
             "prerequisite_course_id) VALUES (%s, %s, %s, %s, %s, NULL)",
-            (code, name, credit, sem, comp),
+            (code, data["course_name"], data["credit"], data["semester"],
+             data["is_compulsory"]),
         )
         ids[code] = cid
 
-    # 更新先修关系
-    for code, prereq_code in prereq_map.items():
-        if code in ids and prereq_code in ids:
+    # 先修关系沿用 PRESET_COURSES
+    for code in demo_codes:
+        prereq = code_to_data[code]["prerequisite_code"]
+        if prereq and prereq in ids:
             db.execute_update(
                 "UPDATE course SET prerequisite_course_id=%s WHERE course_id=%s",
-                (ids[prereq_code], ids[code]),
+                (ids[prereq], ids[code]),
             )
     print(f"  ✓ 插入 {len(ids)} 门课程（含先修关系）")
     return list(ids.values())
@@ -124,77 +114,20 @@ def seed_study_records(student_ids: list[int], course_ids: list[int]) -> None:
 
 
 def seed_knowledge_points(course_ids: list[int]) -> dict:
-    """为每门课生成知识点，返回 {course_id: [kp_id, ...]} 映射."""
-    # 课程知识点定义
-    course_kps = {
-        0: [  # 程序设计基础 (index 0 = first course)
-            ("变量与数据类型", None, 1), ("运算符与表达式", "变量与数据类型", 1),
-            ("条件语句与分支", "运算符与表达式", 2), ("循环结构", "条件语句与分支", 2),
-            ("函数定义与调用", "循环结构", 2), ("面向对象编程", "函数定义与调用", 3),
-            ("文件读写", "面向对象编程", 3), ("程序调试与优化", "文件读写", 4),
-        ],
-        1: [  # 数据结构与算法
-            ("线性表与链表", None, 1), ("栈与队列", "线性表与链表", 2),
-            ("二叉树与遍历", "栈与队列", 3), ("图的存储与遍历", "二叉树与遍历", 3),
-            ("排序算法", "图的存储与遍历", 3), ("查找算法", "排序算法", 2),
-            ("动态规划入门", "查找算法", 4), ("贪心算法与回溯", "动态规划入门", 4),
-        ],
-        2: [  # 面向对象程序设计
-            ("面向对象基本概念", None, 1), ("类与对象设计", "面向对象基本概念", 2),
-            ("继承与多态", "类与对象设计", 2), ("接口与抽象类", "继承与多态", 3),
-            ("设计模式入门", "接口与抽象类", 3), ("面向对象案例分析", "设计模式入门", 4),
-        ],
-        3: [  # 数据库原理
-            ("数据库系统概念", None, 1), ("关系模型与代数", "数据库系统概念", 2),
-            ("SQL查询语言", "关系模型与代数", 2), ("数据库设计范式", "SQL查询语言", 3),
-            ("事务与并发控制", "数据库设计范式", 3), ("索引与查询优化", "事务与并发控制", 4),
-        ],
-        4: [  # 人工智能导论
-            ("人工智能概述", None, 1), ("搜索算法", "人工智能概述", 2),
-            ("机器学习基础", "搜索算法", 2), ("神经网络入门", "机器学习基础", 3),
-            ("深度学习实践", "神经网络入门", 4), ("AI伦理与前沿", "深度学习实践", 3),
-        ],
-        5: [  # 高等数学(上)
-            ("函数与极限", None, 1), ("导数与微分", "函数与极限", 2),
-            ("微分中值定理", "导数与微分", 2), ("不定积分", "微分中值定理", 3),
-            ("定积分及其应用", "不定积分", 3), ("常微分方程", "定积分及其应用", 4),
-        ],
-        6: [  # 线性代数
-            ("行列式计算", None, 1), ("矩阵运算", "行列式计算", 2),
-            ("向量空间", "矩阵运算", 2), ("线性方程组", "向量空间", 3),
-            ("特征值与特征向量", "线性方程组", 3), ("二次型与应用", "特征值与特征向量", 4),
-        ],
-        7: [  # 大学英语(4)
-            ("学术词汇积累", None, 1), ("阅读理解策略", "学术词汇积累", 1),
-            ("英语写作技巧", "阅读理解策略", 2), ("听力与口语训练", "英语写作技巧", 2),
-            ("翻译方法与实践", "听力与口语训练", 3), ("英语演讲与表达", "翻译方法与实践", 3),
-        ],
-    }
-
+    """按 PRESET_COURSE_TREE 生成三层知识结构，返回 {course_id: 叶子kp_id列表}."""
+    from business_layer.seed_data import COURSE_NAME_TO_CODE, ensure_course_hierarchy
     result = {}
-    all_kps = {}  # {kp_name: kp_id} for parent linking
-
-    for idx, cid in enumerate(course_ids):
-        if idx in course_kps:
-            templates = course_kps[idx]
-        else:
-            # Fallback for any extra courses
-            templates = [
-                (f"{idx+1}-基本概念", None, 1), (f"{idx+1}-核心方法", f"{idx+1}-基本概念", 2),
-                (f"{idx+1}-实践应用", f"{idx+1}-核心方法", 3), (f"{idx+1}-案例分析", f"{idx+1}-实践应用", 4),
-            ]
-
-        kp_ids = []
-        for name, parent_name, diff in templates:
-            parent_id = all_kps.get(parent_name) if parent_name else None
-            kp_id = db.execute_insert(
-                "INSERT INTO knowledge_point (kp_name, course_id, parent_kp_id, "
-                "difficulty, weight) VALUES (%s, %s, %s, %s, %s)",
-                (name, cid, parent_id, diff, round(random.uniform(0.8, 1.2), 2)),
-            )
-            all_kps[name] = kp_id
-            kp_ids.append(kp_id)
-        result[cid] = kp_ids
+    for cid in course_ids:
+        rows = db.execute_query(
+            "SELECT course_name FROM course WHERE course_id = %s", (cid,))
+        course_name = rows[0]["course_name"] if rows else ""
+        code = COURSE_NAME_TO_CODE.get(course_name)
+        if code:
+            ensure_course_hierarchy(db, cid, code, course_name)
+        leaves = db.execute_query(
+            "SELECT kp_id FROM knowledge_point WHERE course_id = %s "
+            "AND node_type = 'kp' ORDER BY kp_id", (cid,))
+        result[cid] = [r["kp_id"] for r in leaves]
 
     print(f"  ✓ 插入 {sum(len(v) for v in result.values())} 个知识点")
     return result

@@ -25,6 +25,7 @@ class Course:
     semester: str = ""
     is_compulsory: bool = True
     prerequisite_course_id: Optional[int] = None
+    created_by: Optional[int] = None
 
 
 @dataclass
@@ -71,6 +72,8 @@ class KnowledgePoint:
     parent_kp_id: Optional[int] = None
     difficulty: int = 1
     weight: float = 1.0
+    created_by: Optional[int] = None
+    node_type: str = "kp"
 
 
 @dataclass

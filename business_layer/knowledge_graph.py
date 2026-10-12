@@ -10,20 +10,27 @@ class KnowledgeGraph:
         self._dao = KnowledgeDAO(db)
         self.graph: nx.DiGraph = nx.DiGraph()
         self._node_labels: dict[int, str] = {}
+        self._node_types: dict[int, str] = {}
         self._course_id: int = 0
 
-    def build_graph(self, course_id: int) -> None:
+    def build_graph(self, course_id: int, student_id: int | None = None) -> None:
         self._course_id = course_id
         self.graph = nx.DiGraph()
         self._node_labels.clear()
+        self._node_types.clear()
 
-        nodes = self._dao.get_knowledge_points(course_id)
+        nodes = self._dao.get_knowledge_points(course_id, student_id)
         for n in nodes:
             self.graph.add_node(n["kp_id"])
             self._node_labels[n["kp_id"]] = n["kp_name"]
+            self._node_types[n["kp_id"]] = n.get("node_type", "kp")
 
-        edges = self._dao.get_edges(course_id)
+        edges = self._dao.get_edges(course_id, student_id)
         self.graph.add_edges_from(edges)
+
+    def is_structure_node(self, kp_id: int) -> bool:
+        """课程根/章等结构节点（无掌握度行，不参与薄弱统计）."""
+        return self._node_types.get(kp_id, "kp") != "kp"
 
     def mark_mastery(self, student_id: int) -> dict[int, str]:
         mastery_data = self._dao.get_mastery_for_course(student_id, self._course_id)
@@ -31,6 +38,9 @@ class KnowledgeGraph:
 
         colors: dict[int, str] = {}
         for node in self.graph.nodes():
+            if self.is_structure_node(node):
+                colors[node] = "structure"
+                continue
             level = mastery_map.get(node, 0)
             if level >= 80:
                 colors[node] = "mastered"
@@ -49,7 +59,8 @@ class KnowledgeGraph:
         weak = [
             {"kp_id": node, "kp_name": self._node_labels.get(node, ""),
              "mastery": mastery_map.get(node, 0)}
-            for node in self.graph.nodes() if colors.get(node) == "weak"
+            for node in self.graph.nodes()
+            if colors.get(node) == "weak" and not self.is_structure_node(node)
         ]
 
         if not weak:

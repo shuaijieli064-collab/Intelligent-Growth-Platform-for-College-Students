@@ -32,16 +32,35 @@ def verify_kp_belongs_to_student(
     student_id: int,
     db: DatabaseManager,
 ) -> dict:
+    """知识点存在且当前学生可见：预置(created_by NULL)共享，自建仅本人."""
     kp_dao = KnowledgeDAO(db)
     kp = kp_dao.get_kp_by_id(kp_id)
     if kp is None:
         raise HTTPException(status_code=404, detail="知识点不存在")
-    sc_dao = StudentCourseDAO(db)
-    student_courses = CourseDAO(db).get_by_student(student_id)
-    student_course_ids = [c.course_id for c in student_courses]
-    if kp["course_id"] not in student_course_ids:
-        raise HTTPException(status_code=403, detail="无权操作该知识点")
+    verify_course_enrollment(kp["course_id"], student_id, db)
+    created_by = kp.get("created_by")
+    if created_by is not None and created_by != student_id:
+        raise HTTPException(status_code=403, detail="无权访问该知识点")
     return kp
+
+
+def verify_kp_owned_by_student(
+    kp_id: int,
+    student_id: int,
+    db: DatabaseManager,
+) -> dict:
+    """修改/删除前校验：预置知识点只读，学生只能操作自己创建的节点."""
+    kp = verify_kp_belongs_to_student(kp_id, student_id, db)
+    if kp.get("created_by") is None:
+        raise HTTPException(status_code=403, detail="预置知识点不可修改")
+    return kp
+
+
+def verify_course_enrollment(course_id: int, student_id: int, db: DatabaseManager) -> None:
+    """校验当前学生已选修该课程，防止横向越权读取任意课程数据."""
+    student_course_ids = [c.course_id for c in CourseDAO(db).get_by_student(student_id)]
+    if course_id not in student_course_ids:
+        raise HTTPException(status_code=403, detail="无权访问该课程")
 
 
 @router.get("/{course_id}", response_model=ApiResponse[KnowledgeGraphResponse])
@@ -50,8 +69,9 @@ def get_knowledge_graph(
     student_id: int = Depends(get_current_student_id),
     db: DatabaseManager = Depends(get_db),
 ):
+    verify_course_enrollment(course_id, student_id, db)
     kg = KnowledgeGraph(db)
-    kg.build_graph(course_id)
+    kg.build_graph(course_id, student_id)
     colors = kg.mark_mastery(student_id)
 
     all_mastery = KnowledgeDAO(db).get_mastery_for_course(student_id, course_id)
@@ -60,12 +80,17 @@ def get_knowledge_graph(
     node_labels = kg.get_node_labels()
     nodes, edges = kg.get_graph_data()
 
+    kp_rows = KnowledgeDAO(db).get_knowledge_points(course_id, student_id)
+    meta_map = {r["kp_id"]: r for r in kp_rows}
+
     node_list = [
         KnowledgeNode(
             kp_id=n,
             kp_name=node_labels.get(n, f"KP-{n}"),
             mastery_level=mastery_map.get(n, 0),
             mastery_status=colors.get(n, "weak"),
+            is_owner=meta_map.get(n, {}).get("created_by") == student_id,
+            node_type=meta_map.get(n, {}).get("node_type", "kp"),
         )
         for n in nodes
     ]
@@ -86,8 +111,9 @@ def get_weak_nodes(
     student_id: int = Depends(get_current_student_id),
     db: DatabaseManager = Depends(get_db),
 ):
+    verify_course_enrollment(course_id, student_id, db)
     kg = KnowledgeGraph(db)
-    kg.build_graph(course_id)
+    kg.build_graph(course_id, student_id)
     weak = kg.get_weak_nodes(student_id)
 
     return ApiResponse(
@@ -105,8 +131,9 @@ def get_learning_path(
     student_id: int = Depends(get_current_student_id),
     db: DatabaseManager = Depends(get_db),
 ):
+    verify_course_enrollment(course_id, student_id, db)
     kg = KnowledgeGraph(db)
-    kg.build_graph(course_id)
+    kg.build_graph(course_id, student_id)
 
     chain = kg.get_prerequisite_chain(kp_id)
     chain.append(kp_id)
@@ -148,6 +175,7 @@ def create_knowledge_point(
         parent_kp_id=request.prerequisite_kp_id,
         difficulty=request.difficulty if request.difficulty is not None else 1,
         weight=request.weight if request.weight is not None else 1.0,
+        created_by=student_id,
     )
     kp_id = kp_dao.create_knowledge_point(kp)
 
@@ -170,7 +198,7 @@ def delete_knowledge_point(
     student_id: int = Depends(get_current_student_id),
     db: DatabaseManager = Depends(get_db),
 ):
-    verify_kp_belongs_to_student(kp_id, student_id, db)
+    verify_kp_owned_by_student(kp_id, student_id, db)
     kp_dao = KnowledgeDAO(db)
     success = kp_dao.delete_knowledge_point(kp_id)
     if not success:
@@ -185,7 +213,7 @@ def update_prerequisite(
     student_id: int = Depends(get_current_student_id),
     db: DatabaseManager = Depends(get_db),
 ):
-    kp = verify_kp_belongs_to_student(kp_id, student_id, db)
+    kp = verify_kp_owned_by_student(kp_id, student_id, db)
     prereq_kp = verify_kp_belongs_to_student(request.prerequisite_kp_id, student_id, db)
     if kp["course_id"] != prereq_kp["course_id"]:
         raise HTTPException(status_code=400, detail="先修知识点必须属于同一课程")
@@ -203,7 +231,7 @@ def remove_prerequisite(
     student_id: int = Depends(get_current_student_id),
     db: DatabaseManager = Depends(get_db),
 ):
-    verify_kp_belongs_to_student(kp_id, student_id, db)
+    verify_kp_owned_by_student(kp_id, student_id, db)
     kp_dao = KnowledgeDAO(db)
     success = kp_dao.remove_parent_kp(kp_id)
     if not success:

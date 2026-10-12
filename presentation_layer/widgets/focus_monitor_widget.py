@@ -135,6 +135,8 @@ class FocusMonitorWidget(QWidget):
         self._heat_canvas.draw()
 
     def refresh(self) -> None:
+        # Rebuild monitor so it reads the current student's data
+        self._monitor = FocusMonitor(self._db, self._student_id)
         apply_chart_theme(get_theme())
         success = self._tc("success")
         danger = self._tc("danger")

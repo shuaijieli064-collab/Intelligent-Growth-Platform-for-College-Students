@@ -37,7 +37,7 @@ class GrowthReportDAO:
 
     def get_by_student(self, student_id: int) -> list[dict]:
         rows = self._db.execute_query(
-            "SELECT * FROM growth_report WHERE student_id = %s ORDER BY report_date DESC",
+            "SELECT * FROM growth_report WHERE student_id = %s ORDER BY created_at DESC, id DESC",
             (student_id,),
         )
         return [self._parse_detail(r) for r in rows]
@@ -45,7 +45,7 @@ class GrowthReportDAO:
     def get_by_type(self, student_id: int, report_type: str) -> list[dict]:
         return self._db.execute_query(
             "SELECT * FROM growth_report WHERE student_id = %s AND report_type = %s "
-            "ORDER BY report_date DESC",
+            "ORDER BY created_at DESC, id DESC",
             (student_id, report_type),
         )
 
